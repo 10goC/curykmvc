@@ -1,0 +1,19 @@
+<h1>Documentation</h1>
+<hr>
+<section id="configuration">
+	<h2>1. Configuration</h2>
+	<p>Two configuration files are loaded automatically:</p>
+	<ul>
+		<li>/application/config.global.php</li>
+		<li>/application/config.local.php</li>
+	</ul>
+	<p>Config.local.php should be excluded from repository.<br>
+	All configurations set in local file will override the global setup</p>
+	<section id="subdirectory">
+		<h3>1.1 Working in a subdirectory</h3>
+		<p>Include a key 'baseUrl' in config with the name of the subdirectory, i.e:</p>
+		<p><code>'baseUrl' => '/lib/mvc/trunk/public',</code></p>
+		<p>To make links work from within the view use serverUrl helper, i.e:</p>
+		<p><code>echo $this->serverUrl('/assets/js/script.js')</code></p>
+	</section>
+</section>
