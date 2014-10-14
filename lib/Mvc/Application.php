@@ -61,7 +61,7 @@ class Application
 				}
 			}
 		}
-		$controllerClass = 'Application\\Controller\\' . $this->dashesToCamelCase($controllerRequest) . 'Controller';
+		$controllerClass = 'Application\\Controller\\' . ucfirst($this->dashesToCamelCase($controllerRequest)) . 'Controller';
 		$action = $this->dashesToCamelCase($actionRequest) . 'Action';
 		
 		// Load Bootstrap

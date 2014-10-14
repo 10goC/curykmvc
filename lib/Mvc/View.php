@@ -37,11 +37,11 @@ class View
 	{
 		if($template = $controller->getTemplate()){
 			ob_start();
-			include( APPLICATION_PATH . "/View/$template.phtml" );
+			include( APPLICATION_PATH . "/view/$template.phtml" );
 			$this->content = ob_get_clean();
 		}
 		if($layout = $controller->getLayout()){
-			include( APPLICATION_PATH . "/View/layout/$layout.phtml" );
+			include( APPLICATION_PATH . "/view/layout/$layout.phtml" );
 		}else{
 			echo $this->content;
 		}
