@@ -32,8 +32,9 @@ abstract class AbstractAdapter implements AdapterInterface
 		}
 		
 		// prepare and execute the statement with profiling
-		$stmt = $this->prepare($sql);
-		$stmt->execute((array) $bind);
+		if($stmt = $this->prepare($sql)){
+			$stmt->execute((array) $bind);
+		}
 	
 		// return the results embedded in the prepared statement object
 		return $stmt;

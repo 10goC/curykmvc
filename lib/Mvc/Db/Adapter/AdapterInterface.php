@@ -13,4 +13,14 @@ interface AdapterInterface
 	 */
 	public function prepare($sql);
 	
+	/**
+	 * Returns last insert ID
+	 */
+	public function insertedId();
+	
+	/**
+	 * Returns number of rows affected by last query
+	 */
+	public function affectedRows();
+	
 }

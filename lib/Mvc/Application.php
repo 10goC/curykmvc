@@ -5,6 +5,8 @@ use Application\Bootstrap;
 
 class Application
 {
+	const TEXTDOMAIN = 'Application';
+	
 	/**
 	 * The Database connection
 	 * @var Mvc\Db\Adapter\AdapterInterface
@@ -42,14 +44,14 @@ class Application
 	{
 		// Autoload classes
 		require_once LIB_PATH . '/Mvc/Autoload.php';
-		$autoload = new Autoload();
+		$autoload = new Autoload($this);
 		$autoload->registerAutoload();
 		
 		// Get request
 		$request = new Request($this);
 		$requestPart = $request->getParts();
-		$controllerRequest = empty($requestPart[0]) ? 'index' : $requestPart[0];
-		$actionRequest = empty($requestPart[1]) ? 'index' : $requestPart[1];
+		$controllerRequest = $requestPart[0];
+		$actionRequest = $requestPart[1];
 		$this->request = array(
 			'controller' => $controllerRequest,
 			'action' => $actionRequest
@@ -76,11 +78,17 @@ class Application
 			$bootstrap->bootstrap();
 			
 			// Do action
+			$this->controller->init();
 			$this->controller->$action();
+			
+			// Render view
+			ob_start();
+			$this->controller->renderView();
+			$output = ob_get_clean();
+			echo $output;
 		} catch (\Exception $e) {
-			if($e->getCode()){
-				http_response_code($e->getCode());
-			}
+			$responseCode = ($e->getCode()) ?: 404;
+			http_response_code($responseCode);
 			if(!$this->controller){
 				$this->controller = new \Mvc\Controller\ErrorController($this);
 				// Retry boostrap
@@ -90,12 +98,14 @@ class Application
 					// :(
 				}
 			}
+			$this->controller->setLayout('error');
 			$this->controller->setTemplate('error/error');
 			$this->controller->getView()->exception = $e;
+			
+			// Render view
+			ob_clean();
+			$this->controller->renderView();
 		}
-		
-		// Render view
-		$this->controller->renderView();
 	}
 	
 	/**

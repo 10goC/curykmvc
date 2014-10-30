@@ -3,6 +3,12 @@ namespace Mvc;
 
 class Controller
 {
+	const NOTICE  = 'notice';
+	const ERROR   = 'error';
+	const SUCCESS = 'success';
+	
+	const FLASH_MESSAGES = 'controller_flash_messages';
+	
 	/**
 	 * The application
 	 * @var Mvc\Application
@@ -14,6 +20,12 @@ class Controller
 	 * @var Mvc\View
 	 */
 	protected $view;
+	
+	/**
+	 * The view object class
+	 * @var string
+	 */
+	protected $viewClass = 'Mvc\\View';
 	
 	/**
 	 * The name of the layout template to use
@@ -28,13 +40,32 @@ class Controller
 	protected $template;
 	
 	/**
+	 * A container for controller messages
+	 * @var array
+	 */
+	protected $messages = array();
+	
+	/**
 	 * Store application injected object and initialize view
 	 * @param Application $application
 	 */
 	public function __construct(Application $application)
 	{
+		$viewClass = $this->viewClass;
 		$this->application = $application;
-		$this->view = new View($this);
+		$this->view = new $viewClass($this);
+		
+		$session = &$this->getSession(self::FLASH_MESSAGES);
+		foreach($session as $type => $messages){
+			foreach($messages as $message){
+				$this->addMessage($message, $type);
+			}
+			unset($session[$type]);
+		}
+	}
+	
+	public function init()
+	{
 	}
 	
 	/**
@@ -130,6 +161,20 @@ class Controller
 		return isset($_POST[$index]) ? $_POST[$index] : $default;
 	}
 	
+	public function &getSession($section = null)
+	{
+		if(!isset($_SESSION)){
+			@session_start();
+		}
+		if($section){
+			if(!isset($_SESSION[$section])){
+				$_SESSION[$section] = array();
+			}
+			return $_SESSION[$section];
+		}
+		return $_SESSION;
+	}
+	
 	public function setOutputType($type)
 	{
 		switch (strtolower($type)) {
@@ -139,6 +184,28 @@ class Controller
 				header('Content-type: application/json');
 			break;
 		}
+	}
+	
+	public function getMessages()
+	{
+		return $this->messages;
+	}
+	
+	public function addMessage($message, $type = self::NOTICE)
+	{
+		if(!isset($this->messages[$type])) $this->messages[$type] = array();
+		array_push($this->messages[$type], $message);
+	}
+	
+	public function addFlashMessage($message, $type = self::NOTICE)
+	{
+		$session = &$this->getSession(self::FLASH_MESSAGES);
+		$session[$type][] = $message;
+	}
+	
+	public function redirect($url)
+	{
+		die(header("location:$url"));
 	}
 	
 	public function __call($action, $arguments)

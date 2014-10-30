@@ -1,5 +1,9 @@
 <?php
 return array(
+	'libraries' => array(
+		'Mvc',
+		'Abm'
+	),
 	'db' => array(
 		'host' => '',
 		'user' => '',

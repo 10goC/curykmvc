@@ -9,13 +9,17 @@ class MysqliAdapter extends AbstractAdapter
 	
 	public function setDb()
 	{
-		$this->db = new \mysqli(
+		@$this->db = new \mysqli(
 			$this->getConfig()->host,
 			$this->getConfig()->user,
 			$this->getConfig()->pass,
 			$this->getConfig()->name
 		);
-		$this->db->query("SET NAMES 'utf8'");
+		if($this->db->connect_error){
+			throw new \Exception($this->db->connect_error);
+		}else{
+			$this->db->query("SET NAMES 'utf8'");
+		}
 	}
 	
 	/**
@@ -26,7 +30,10 @@ class MysqliAdapter extends AbstractAdapter
 	 */
 	public function prepare($sql)
 	{
-		if ($this->stmt) {
+		if($this->getDb()->connect_error){
+			return false;
+		}
+		if($this->stmt){
 			$this->stmt->close();
 		}
 		
@@ -34,5 +41,15 @@ class MysqliAdapter extends AbstractAdapter
 		$stmt->prepare();
 		$this->stmt = $stmt;
 		return $stmt;
+	}
+	
+	public function insertedId()
+	{
+		return $this->getDb()->insert_id;
+	}
+	
+	public function affectedRows()
+	{
+		return $this->getDb()->affected_rows;
 	}
 }

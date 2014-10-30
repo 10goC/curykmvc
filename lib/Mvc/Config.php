@@ -63,4 +63,13 @@ class Config
 		return isset($this->config[$var]);
 	}
 	
+	public function toArray()
+	{
+		if(is_array($this->config)){
+			return $this->config;
+		}else{
+			throw new \Exception("$this->name is not an array");
+		}
+	}
+	
 }

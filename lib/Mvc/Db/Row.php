@@ -12,10 +12,10 @@ class Row
 	
 	public function __get($var)
 	{
-		if(isset($this->data[$var])){
+		if(array_key_exists($var, $this->data)){
 			return $this->data[$var];
 		}
-		throw new \Exception("Column $var does not exist in this row");
+		throw new \Exception("Column $var does not exist in this row ".print_r($this->data, 1));
 	}
 	
 	public function getData()
