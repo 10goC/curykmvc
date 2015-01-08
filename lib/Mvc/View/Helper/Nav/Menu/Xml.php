@@ -1,6 +1,9 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\View\Helper\Nav\Menu;
 
+/** An exension of SimpleXMLElement class that adds backwards compatibility PHP versions < 5.3 */
 class Xml extends \SimpleXMLElement
 {
 	/**

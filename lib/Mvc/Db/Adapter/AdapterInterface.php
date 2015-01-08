@@ -1,6 +1,9 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\Db\Adapter;
 
+/** An interface for database adapters */
 interface AdapterInterface
 {
 	/**
@@ -9,7 +12,8 @@ interface AdapterInterface
 	public function setDb();
 	
 	/**
-	 * Prepares a SQL statement
+	 * Prepare a SQL statement
+	 * @param string $sql
 	 */
 	public function prepare($sql);
 	
@@ -22,5 +26,14 @@ interface AdapterInterface
 	 * Returns number of rows affected by last query
 	 */
 	public function affectedRows();
+	
+	/**
+	 * Prepares and executes an SQL statement with bound data.
+	 *
+	 * @param  string  $sql  The SQL statement with placeholders.
+	 * @param  array   $bind An array of data to bind to the placeholders.
+	 * @return Mvc\Db\StatementInterface
+	 */
+	public function query($sql, $bind = array());
 	
 }

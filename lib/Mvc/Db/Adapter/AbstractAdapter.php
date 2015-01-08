@@ -1,9 +1,11 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\Db\Adapter;
 
 use Mvc\Config;
-use Mvc\Db\Select;
 
+/** Abstract database adapter */
 abstract class AbstractAdapter implements AdapterInterface
 {
 	/**
@@ -19,18 +21,11 @@ abstract class AbstractAdapter implements AdapterInterface
 	protected $db;
 	
 	/**
-	 * Prepares and executes an SQL statement with bound data.
-	 *
-	 * @param  string  $sql  The SQL statement with placeholders.
-	 * @param  array   $bind An array of data to bind to the placeholders.
-	 * @return Mvc\Db\StatementInterface
+	 * (non-PHPdoc)
+	 * @see \Mvc\Db\Adapter\AdapterInterface::query()
 	 */
 	public function query($sql, $bind = array())
 	{
-		if($sql instanceof Select){
-			$sql = $sql->assemble();
-		}
-		
 		// prepare and execute the statement with profiling
 		if($stmt = $this->prepare($sql)){
 			$stmt->execute((array) $bind);

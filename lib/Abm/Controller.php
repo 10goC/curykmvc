@@ -1,23 +1,47 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Abm;
 
 use Mvc\Application;
 use Mvc\Controller as MvcController;
 use Mvc\Translator;
 
+/** You must extend this controller to use Abm entities */
 class Controller extends MvcController
 {
+	/**
+	 * The class name for the View object
+	 * @var string
+	 */
 	protected $viewClass = 'Abm\\View';
-	protected $lang = 'en_US';
-	protected $translator;
-	protected $cache = array();
 	
+	/**
+	 * The current language
+	 * @var string
+	 */
+	protected $lang = 'en_US';
+	
+	/**
+	 * The Translator object
+	 * @var Mvc\Translator
+	 */
+	protected $translator;
+	
+	/**
+	 * Create a translator instance and initialize controller.
+	 * @param Application $application the application gets automatically injected into the controller
+	 */
 	public function __construct(Application $application)
 	{
 		parent::__construct($application);
 		$this->translator = new Translator($this);
 	}
 	
+	/**
+	 * Set language and load Abm and Application text domains.
+	 * @param string $lang
+	 */
 	public function setLang($lang)
 	{
 		$this->lang = $lang;
@@ -26,29 +50,22 @@ class Controller extends MvcController
 		$this->translator->loadTextDomain(Application::TEXTDOMAIN);
 	}
 	
+	/**
+	 * Get current language.
+	 * @return string
+	 */
 	public function getLang()
 	{
 		return $this->lang;
 	}
 	
+	/**
+	 * Get the translator object.
+	 * @return Mvc\Translator
+	 */
 	public function getTranslator()
 	{
 		return $this->translator;
 	}
 	
-	public function getCache($section = null)
-	{
-		if($section){
-			if(!isset($this->cache[$section])){
-				$this->cache[$section] = array();
-			}
-			return $this->cache[$section];
-		}
-		return $this->cache;
-	}
-	
-	public function addToCache($section, $values)
-	{
-		$this->cache[$section] = array_merge($this->cache[$section], $values);
-	}
 }

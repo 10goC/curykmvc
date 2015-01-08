@@ -6,5 +6,5 @@ return array(
 		'pass' => '',
 		'name' => '',
 	),
-	'baseUrl' => '/lib/mvc/trunk/public',
+	'basepath' => '/lib/mvc/trunk',
 );

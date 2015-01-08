@@ -1,28 +1,53 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
+/** A class for parsing the HTTP request */
 class Request
 {
+	/**
+	 * The application object
+	 * @var Mvc\Application
+	 */
 	protected $application;
+	
+	/**
+	 * An array containing the different parts of the analyzed request
+	 * @var array
+	 */
 	protected $parts;
 	
+	/**
+	 * Receives an Application instance and stores it into a variable
+	 * @param Application $application
+	 */
 	public function __construct(Application $application)
 	{
 		$this->application = $application;
 	}
 	
+	/**
+	 * Analyize the HTTP request and parse into an array
+	 * @return array
+	 */
 	public function getParts()
 	{
 		if($this->parts === null){
 			$request = $_SERVER['REQUEST_URI'];
+			if(strpos($request, '?')){
+				$request = strstr($request, '?', 1);
+			}
+			
 			try {
-				$baseUrl = $this->application->getConfig()->baseUrl;
+				$basepath = $this->application->getConfig()->basepath;
 			} catch (\Exception $e) {
-				$baseUrl = '';
+				$basepath = '';
 			}
-			if($baseUrl){
-				$request = preg_replace("#^$baseUrl#", '', $request);
+			if($basepath){
+				$request = preg_replace("#^$basepath#", '', $request);
 			}
+			
 			$parts = explode('/', trim($request, '/'));
 			
 			// Add index for empty controller name
@@ -33,9 +58,8 @@ class Request
 			if(empty($parts[1])){
 				$parts[1] = 'index';
 			}
-			$lastPart = end($parts);
-			if($lastPart[0] == '?'){
-				parse_str(substr(array_pop($parts), 1), $qs);
+			if(!empty($_SERVER['QUERY_STRING'])){
+				parse_str($_SERVER['QUERY_STRING'], $qs);
 				foreach($qs as $key => $value){
 					$parts[] = $key;
 					$parts[] = $value;

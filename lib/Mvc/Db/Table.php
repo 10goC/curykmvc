@@ -1,8 +1,11 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\Db;
 
 use Mvc\Controller;
 
+/** A class that represents a database table */
 class Table
 {
 	/**
@@ -16,10 +19,25 @@ class Table
 	 * @var Mvc\Controller
 	 */
 	protected $controller;
-	protected $db;
+	
+	/**
+	 * Class name for the Resultset object
+	 * @var string
+	 */
 	protected $resultsetClass = 'Mvc\Db\Resultset';
+	
+	/**
+	 * Class name for the Row object
+	 * @var string
+	 */
 	protected $rowClass = 'Mvc\Db\Row';
 	
+	/**
+	 * Receives injected Controller and a table name
+	 * @param Controller $controller
+	 * @param string $table
+	 * @throws \Exception
+	 */
 	public function __construct(Controller $controller, $table = null)
 	{
 		$this->controller = $controller;
@@ -40,25 +58,59 @@ class Table
 		return $this->controller;
 	}
 	
+	/**
+	 * Get the application database connection object
+	 * @return Mvc\Db\Adapter\AdapterInterface
+	 */
 	public function getDb()
 	{
 		return $this->getController()->getApplication()->getDb();
 	}
 	
+	/**
+	 * Set the class name for the Row object
+	 * @param string $rowClass
+	 */
+	public function setRowClass($rowClass)
+	{
+		$this->rowClass = $rowClass;
+	}
+	
+	/**
+	 * Get class name for the Row object
+	 * @return string
+	 */
+	public function getRowClass()
+	{
+		return $this->rowClass;
+	}
+	
+	/**
+	 * Make a SELECT query to database and return a Resultset object
+	 * @param string $select The SQL query to execute
+	 * @param array $bind (Optional) An array of values to be bound into 
+	 * the query. Question mark (?) placeholders must be present in $select
+	 * @return Mvc\Db\Resultset
+	 */
 	public function fetch($select, $bind = array()){
 		$result = $this->getDb()->query($select, $bind);
 		if($result){
 			$resultsetClass = $this->resultsetClass;
-			$resultset = new $resultsetClass();
+			$resultset = new $resultsetClass($this);
 			while($row = $result->fetchRow()){
-				$rowClass = $this->rowClass;
-				$resultset->addRow(new $rowClass($row));
+				$resultset->addRow($row);
 			}
 			return $resultset;
 		}
 		return $result;
 	}
 	
+	/**
+	 * Insert a new row into the database.
+	 * @param array $values An array of key / value 
+	 * pairs representing column names and values
+	 * @return int|NULL The inserted Id or null on failure
+	 */
 	public function insert(array $values)
 	{
 		$keys = array_keys($values);
@@ -73,16 +125,30 @@ class Table
 		return null;
 	}
 	
-	public function update($primaryKey, $id, $values)
+	/**
+	 * Update a record in the database.
+	 * @param string|array $key The primary key column name
+	 * @param string|array $id The primary key value
+	 * @param array $values An array of key / value 
+	 * pairs representing column names and values
+	 * @return int|NULL The number of affected rows or null on failure.
+	 */
+	public function update($key, $id, $values)
 	{
 		$keys = array_keys($values);
-		foreach($values as $key => $value){
-			$set[] = "`$key` = ?";
+		foreach($values as $column => $value){
+			$set[] = "`$column` = ?";
 		}
 		$placeholders = implode(', ', $set);
-		$query = "UPDATE $this->table SET $placeholders WHERE $primaryKey = ?";
+		foreach((array) $key as $k){
+			$where[] = "`$k` = ?";
+		}
+		$where = implode(" AND ", $where);
+		$query = "UPDATE `$this->table` SET $placeholders WHERE $where";
 		$bind = array_values($values);
-		$bind[] = $id;
+		foreach((array) $id as $i){
+			$bind[] = $i;
+		}
 		$result = $this->getDb()->query($query, $bind);
 		if($result){
 			return $this->getDb()->affectedRows();
@@ -90,10 +156,16 @@ class Table
 		return null;
 	}
 	
-	public function delete($primaryKey, $id)
+	/**
+	 * Delete a record from the database
+	 * @param string $key The primary key column name
+	 * @param string $id The primary key value
+	 * @return int|NULL The number of affected rows or null on failure.
+	 */
+	public function delete($key, $id)
 	{
 		$placeholders = $this->getPlaceholders($id);
-		$query = "DELETE FROM $this->table WHERE $primaryKey IN( $placeholders )";
+		$query = "DELETE FROM $this->table WHERE $key IN( $placeholders )";
 		$result = $this->getDb()->query($query, $id);
 		if($result){
 			return $this->getDb()->affectedRows();
@@ -101,11 +173,23 @@ class Table
 		return null;
 	}
 	
+	/**
+	 * Remove back quotes (`) from column name
+	 * @param string $column
+	 * @return string
+	 */
 	public function filterColumnName(&$column)
 	{
 		return str_replace('`', '', $column);
 	}
 	
+	/**
+	 * Get a certain number of question mark placeholders 
+	 * concatenated into a comma separated string
+	 * @param array $columns an array which size should 
+	 * match the number of desired placeholders
+	 * @return string
+	 */
 	public function getPlaceholders($columns)
 	{
 		$placeholders = array_fill(0, count($columns), '?');

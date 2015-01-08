@@ -1,0 +1,19 @@
+<section id="configuration">
+	<h2>{{chapter}}. Configuración</h2>
+	<p>Dos archivos de configuración se cargan automáticamente:</p>
+	<ul>
+		<li>/application/config.global.php</li>
+		<li>/application/config.local.php</li>
+	</ul>
+	<p>Config.local.php debería ser excluído del control de versiones.<br>
+	Todas las configuraciones del archivo local sobreescriben a las globales.</p>
+	<section id="subdirectory">
+		<h3 id="configuration-subdir">{{chapter}}.1 Trabajando en un subdirectorio</h3>
+		<p>Se debe incluir una clave 'basepath' en el config con el nombre del subdirectorio, ej.:<br>
+		<code>'basepath' => '/lib/mvc/trunk/public',</code></p>
+		<p>Para que los enlaces funcionen desde cualquier vista se debe usar el helper baseUrl para generar rutas absolutas dentro del mismo dominio, ej.:<br>
+		<code>echo $this->baseUrl('/assets/js/script.js')</code></p>
+		<p>O serverUrl para URLs completas, ej.:<br>
+		<code>echo $this->serverUrl('/assets/js/script.js')</code></p>
+	</section>
+</section>

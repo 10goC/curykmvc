@@ -1,8 +1,11 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
 use Mvc\View\Helper\Nav\Menu;
 
+/** The standard View object */
 class View
 {
 	/**
@@ -17,12 +20,40 @@ class View
 	 */
 	protected $content;
 	
+	/**
+	 * HTML tag for wrapping messages
+	 * @var string
+	 */
 	public $messagesOuterTag = 'div';
+	
+	/**
+	 * CSS class to apply to the HTML messages container element
+	 * @var string
+	 */
 	public $messagesOuterClass = 'messages';
+	
+	/**
+	 * HTML tag for individual messages
+	 * @var string
+	 */
 	public $messagesInnerTag = 'p';
+	
+	/**
+	 * CSS class to apply to individual messages
+	 * @var string
+	 */
 	public $messagesInnerClass = 'message';
+	
+	/**
+	 * A string for separating messages between each other
+	 * @var string
+	 */
 	public $messagesSeparator = PHP_EOL;
 	
+	/**
+	 * Injects the Controller object
+	 * @param Controller $controller
+	 */
 	public function __construct(Controller $controller)
 	{
 		$this->controller = $controller;
@@ -43,6 +74,7 @@ class View
 	 */
 	public function render(Controller $controller)
 	{
+		extract(get_object_vars($this));
 		if($template = $controller->getTemplate()){
 			$templateUrl = APPLICATION_PATH . "/view/$template.phtml";
 			if(file_exists($templateUrl)){
@@ -65,6 +97,10 @@ class View
 		}
 	}
 	
+	/**
+	 * Get the Controller object
+	 * @return Mvc\Controller
+	 */
 	public function getController()
 	{
 		return $this->controller;
@@ -80,28 +116,89 @@ class View
 		return null;
 	}
 	
-	public function serverUrl($url)
+	/**
+	 * Autoload view helper
+	 * @param string $name
+	 * @param array $args
+	 * @throws \Exception
+	 * @return Mvc\View\Helper
+	 */
+	public function __call($name, $args = null)
 	{
 		try {
-			$baseUrl = $this->controller->getApplication()->getConfig()->baseUrl;
+			$helperClass = (string) $this->getController()->getApplication()->getConfig()->view->helpers->$name;
+			$helper = new $helperClass($this, $args);
+			return $helper;
 		} catch (\Exception $e) {
-			$baseUrl = '';
+			throw new \Exception("View helper $name not found", 500, $e);
 		}
-		return $baseUrl . '/' . trim($url, '/');
 	}
 	
+	/**
+	 * Generates a full URL
+	 * @param string $url
+	 * @return string
+	 */
+	public function serverUrl($url)
+	{
+		$protocol = preg_match('/https/i', $_SERVER['SERVER_PROTOCOL']) ? 'https' : 'http';
+		return $protocol . '://' . $_SERVER['SERVER_NAME'] . $this->baseUrl($url);
+	}
+	
+	/**
+	 * Generate a link appending the basepath if present in config
+	 * @param string $url
+	 * @return string
+	 */
+	public function baseUrl($url)
+	{
+		try {
+			$basepath = $this->controller->getApplication()->getConfig()->basepath;
+		} catch (\Exception $e) {
+			$basepath = '';
+		}
+		return $basepath . '/' . trim($url, '/');
+	}
+	
+	/**
+	 * Remove the Query String portion of the current Request URI
+	 * @return string
+	 */
 	public function removeQs()
 	{
 		$request = str_replace('?'.$_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
 		return $request;
 	}
 	
+	/**
+	 * Add or update one or more parameters in the current Query String
+	 * @param array $params an associative array with key value pairs
+	 * @return string
+	 */
+	public function addQsParams(array $params)
+	{
+		parse_str($_SERVER['QUERY_STRING'], $qs);
+		$qs = array_merge($qs, $params);
+		return empty($qs) ? '' : '?'.http_build_query($qs);
+	}
+	
+	/**
+	 * Get Navigation Menu Helper
+	 * @param string $id Must be defined in 
+	 * APPLICATION_PATH . '/navigation.xml' config file
+	 * @return Mvc\View\Helper\Nav\Menu
+	 */
 	public function navMenu($id)
 	{
 		$menu = new Menu($this, $id);
 		return $menu;
 	}
 	
+	/**
+	 * Render messages
+	 * @param array $messages
+	 * @return string
+	 */
 	public function renderMessages($messages)
 	{
 		$out = array();

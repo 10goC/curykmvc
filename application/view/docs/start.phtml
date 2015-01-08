@@ -1,0 +1,73 @@
+<style>.tag{ padding:5px; border-radius:5px; }</style>
+<section id="start">
+	<h2>{{chapter}}. Getting started</h2>
+	<p>This guide will tell you the basic guidelines to build a project using this MVC library for PHP.</p>
+	<h3>{{chapter}}.1 Directory structure</h3>
+	<p>The project should containt the following structure:</p>
+	<pre>
+application/
+	Application/
+		Controller/
+		Model/
+		Boostrap.php
+	languages/
+	view/
+	config.global.php
+	config.local.php
+lib/
+	Abm/
+	Mvc/
+public/
+	.htaccess
+	index.php</pre>
+
+	<p>Note: <em>The /lib folder may actually not be present inside the project, but linked from outside of it.</em></p>
+	
+	<p>Every HTTP request will go through /public/index.php, which will in turn load the library, parse the request, call the corresponding controller and render a view (unless the controller says not to).</p>
+	<p>The ideal way of acheiving this is to create a virtual host, so that the root directory of the website is /public.<br>
+	In the case this is not possible due to server configuration restrictions, there must be an .htaccess file inside the root directory targeting all requests to /public directory.</p>
+	
+	<h3>{{chapter}}.2 Workflow</h3>
+	<p>By default, all requests will be parsed like this:</p>
+	<p>http://domain.com/<span class="tag bg-danger text-danger">basepath</span>/<span class="tag bg-success text-success">controller</span>/<span class="tag bg-info text-info">action</span></p>
+	<p>The <span class="tag bg-danger text-danger">basepath</span> is optional and can be defined in configuration (See <a href="#configuration-subdir">configuration</a> section)</p>
+	<h4>{{chapter}}.2.1 Controller</h4>
+	<p>A <span class="tag bg-success text-success">controller</span> must be created matching the name of the URL portion, i.e:</p>
+	<p>Let's assume the following URL: <code>http://domain.com/basepath/start</code></p>
+	<ol>
+		<li>Create a file named /application/Application/Controller/StartController.php</li>
+		<li>The controller code must be as follows:</li>
+	</ol>
+	<pre>&lt;?php namespace Application\Controller;
+	
+use Mvc\Controller;
+	
+class StartController extends Controller
+{
+}</pre>
+	<h4>{{chapter}}.2.2 Action</h4>
+	<p>Following the previous example, since no <span class="tag bg-info text-info">action</span> is specified in the URL, <strong>index</strong> will be assumed by default. Hence, create an index action inside the controller class:</p>
+	<pre>&lt;?php namespace Application\Controller;
+	
+use Mvc\Controller;
+	
+class StartController extends Controller
+{
+	public function indexAction()
+	{
+	}
+}</pre>
+
+	<h4>{{chapter}}.2.3 View</h4>
+	<p>Create a template for rendering the desired view. The template files must contain the PHTML extension.</p>
+	<p>Following with the same example, the file would be located at /application/view/start/index.phtml</p>
+	
+	<h4>{{chapter}}.2.4 Layout</h4>
+	<p>By default, all actions will be rendered inside a layout. This can be disabled from within the controller, like this:<br>
+	<code>$this->setLayout(null);</code></p>
+	<p>The default layout will be located at <em>/application/view/layout/layout.phtml</em>.</p>
+	<p>The same controller method is used for changing the layout to use.<br>
+	<code>$this->setLayout( 'another-layout' );</code></p>
+	<p>The phtml file must be inside the same directory (in this case <em>/application/view/layout/<strong>another-layout</strong>.phtml</em>).</p>
+	
+</section>

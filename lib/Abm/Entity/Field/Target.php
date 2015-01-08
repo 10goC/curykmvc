@@ -1,13 +1,16 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Abm\Entity\Field;
 
 use Abm\Entity;
 use Abm\Entity\Field;
 
+/** An entity that connects two database tables */
 class Target extends Entity
 {
 	/**
-	 * The related field
+	 * The field that this entity represents
 	 * @var Abm\Entity\Field
 	 */
 	protected $field;
@@ -18,6 +21,10 @@ class Target extends Entity
 	 */
 	protected $foreignKey;
 	
+	/**
+	 * Initialize object
+	 * @param Field $field The field that this entity represents
+	 */
 	public function __construct(Field $field)
 	{
 		$this->field = $field;
@@ -34,23 +41,40 @@ class Target extends Entity
 		parent::__construct($field->getEntity()->getController());
 	}
 	
+	/**
+	 * Get foreign key name
+	 * @return string
+	 */
 	public function getForeignKey()
 	{
 		return $this->foreignKey;
 	}
 	
+	/**
+	 * Insert data into database
+	 * @param array $data
+	 * @param string $foreignKeyValue The Entity ID
+	 */
 	public function insertRelated($data, $foreignKeyValue)
 	{
-		foreach($data as $value){
-			$values[$this->foreignKey] = $foreignKeyValue;
-			$values[$this->firstField()] = $value;
-			$this->insert($values);
+		if(is_array($data)){
+			foreach($data as $value){
+				$values[$this->foreignKey] = $foreignKeyValue;
+				$values[$this->firstField()] = $value;
+				$this->insert($values);
+			}
 		}
 	}
 	
+	/**
+	 * Update database records (insert new or remove deleted)
+	 * @param array $data
+	 * @param string $foreignKeyValue The Entity ID
+	 * @return int Affected rows
+	 */
 	public function updateRelated($data, $foreignKeyValue)
 	{
-		$prevData = $this->fetchArray("$this->foreignKey = $foreignKeyValue");
+		$prevData = $this->fetchArray("$this->foreignKey = ?", $foreignKeyValue);
 		$insert = $data ? array_diff($data, $prevData) : array();
 		$delete = $data ? array_diff($prevData, $data) : $prevData;
 		$affectedRows = 0;

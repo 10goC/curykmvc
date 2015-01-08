@@ -1,24 +1,81 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\View\Helper\Nav;
 
 use Mvc\View;
 use Mvc\View\Helper\Nav\Menu\Link;
 
+/** View Helper for rendering navigation menus */
 class Menu
 {
+	/**
+	 * The navigation menu ID
+	 * @var string
+	 */
 	public $id;
-	public $links;
-	public $linkCount;
-	public $depth = 0;
-	public $prefix = false;
-	public $parent = null;
-	public $attributes;
-	public $view;
-	protected $menu;
-	protected $brand = '';
-	protected $prepend = '';
-	protected $_currentPage;
 	
+	/**
+	 * The array of navigation links
+	 * @var array
+	 */
+	public $links;
+	
+	/**
+	 * The ammount of links in the navigation menu
+	 * @var int
+	 */
+	public $linkCount;
+	
+	/**
+	 * The depth of the current menu element
+	 * @var int
+	 */
+	public $depth = 0;
+	
+	/**
+	 * An optional prefix for all generated links
+	 * @var string
+	 */
+	public $prefix = false;
+	
+	/**
+	 * The parent element of the current menu element
+	 * @var Mvc\View\Helper\Nav\Menu
+	 */
+	public $parent = null;
+	
+	/**
+	 * HTML attributes for the current element
+	 * @var string
+	 */
+	public $attributes;
+	
+	/**
+	 * The injected View object
+	 * @var Mvc\View
+	 */
+	public $view;
+	
+	/**
+	 * The XML object that contains the navigation menu definition
+	 * @var Mvc\View\Helper\Nav\Menu\Xml
+	 */
+	protected $menu;
+	
+	/**
+	 * Logo or brand to render aside of the navigation menu
+	 * @var string
+	 */
+	protected $brand = '';
+	
+	/**
+	 * Looks for the menu definition within navigation.xml by ID,
+	 * reads the configuration and initializes the navigation menu 
+	 * @param View $view
+	 * @param string $id
+	 * @throws \Exception
+	 */
 	public function __construct(View $view, $id)
 	{
 		$this->view = $view;
@@ -100,7 +157,7 @@ class Menu
 			if($link->index == $link->parent->linkCount) $class .= " last";
 			if($link->isActive())                        $class .= " active";
 			
-			echo '<li id = "'.$id.'" class="'.$class.'">';
+			echo '<li id="'.$id.'" class="'.$class.'">';
 			echo $link->getAnchor();
 			// render sublevels recursively
 			if($link->linkCount){
@@ -112,18 +169,21 @@ class Menu
 		}
 	}
 	
-	public function prepend($prepend)
-	{
-		$this->prepend = $prepend;
-		return $this;
-	}
-	
+	/**
+	 * Set the logo or brand to be rendered aside of the navigation menu
+	 * @param string $brand
+	 * @return Mvc\View\Helper\Nav\Menu
+	 */
 	public function setBrand($brand)
 	{
 		$this->brand = '<a class="navbar-brand" href="#">'.$brand.'</a>';
 		return $this;
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function render()
 	{
 		ob_start();
@@ -145,6 +205,10 @@ class Menu
 		return ob_get_clean();
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function __toString()
 	{
 		return $this->render();

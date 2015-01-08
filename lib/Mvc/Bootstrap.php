@@ -1,10 +1,13 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
+/** Abstract class for defining actions to be performed before any Controller Action */
 abstract class Bootstrap
 {
 	/**
-	 * 
+	 * The injected Application object
 	 * @var Mvc\Application
 	 */
 	protected $application;
@@ -27,5 +30,8 @@ abstract class Bootstrap
 		return $this->application;
 	}
 	
+	/**
+	 * Abstract method to be extended with the required funcionality
+	 */
 	public abstract function bootstrap();
 }

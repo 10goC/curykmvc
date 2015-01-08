@@ -1,31 +1,3 @@
-<h1>Documentation</h1>
+<h1><?php echo $this->title ?></h1>
 <hr>
-<section id="configuration">
-	<h2>1. Configuration</h2>
-	<p>Two configuration files are loaded automatically:</p>
-	<ul>
-		<li>/application/config.global.php</li>
-		<li>/application/config.local.php</li>
-	</ul>
-	<p>Config.local.php should be excluded from repository.<br>
-	All configurations set in local file will override the global setup</p>
-	<section id="subdirectory">
-		<h3>1.1 Working in a subdirectory</h3>
-		<p>Include a key 'baseUrl' in config with the name of the subdirectory, i.e:</p>
-		<p><code>'baseUrl' => '/lib/mvc/trunk/public',</code></p>
-		<p>To make links work from within the view use serverUrl helper, i.e:</p>
-		<p><code>echo $this->serverUrl('/assets/js/script.js')</code></p>
-	</section>
-</section>
-<section id="abm">
-	<h2>2. CRUD (Abm)</h2>
-	<h3>2.1 Controller</h3>
-	<p>The CRUD Controller must extend Abm\Controller.</p>
-	<pre>namespace Application\Controller;<br><br>use Abm\Controller;<br><br>class EntityController extends Controller<br>{<br>&nbsp;&nbsp;&nbsp;&nbsp;...<br>}</pre>
-	<h3>2.2 Entities</h3>
-	<p>All Abm models should extend Abm\Entity.</p>
-	<p>The protected variable $fields can be defined in two ways:</p>
-	<p><code>protected $fields = array('Name', 'Address');</code></p>
-	<p>Or use an associative multidimensional array to specify more options</p>
-	<pre>protected $fields = array(<br>&nbsp;&nbsp;&nbsp;&nbsp;'name' => array(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'title' => 'Your name'<br>&nbsp;&nbsp;&nbsp;&nbsp;),<br>&nbsp;&nbsp;&nbsp;&nbsp;'address' => array(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'type' => 'dbSelect',<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'source' => 'Application\Model\Address'<br>&nbsp;&nbsp;&nbsp;&nbsp;)<br>)</pre>
-</section>
+<?php foreach($chapters as $chapter) echo $chapter . PHP_EOL ?>

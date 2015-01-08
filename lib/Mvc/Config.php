@@ -1,6 +1,9 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
+/** A class for wrapping configuration options */
 class Config
 {
 	/**
@@ -51,7 +54,7 @@ class Config
 		if(!is_array($this->config)){
 			return (string) $this->config;
 		}
-		throw new \Exception("$this->name is not a string");
+		return print_r($this->config, 1);
 	}
 	
 	/**
@@ -63,6 +66,11 @@ class Config
 		return isset($this->config[$var]);
 	}
 	
+	/**
+	 * Return the current config section contents as an array
+	 * @throws \Exception
+	 * @return array
+	 */
 	public function toArray()
 	{
 		if(is_array($this->config)){

@@ -1,8 +1,11 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
 use Application\Bootstrap;
 
+/** The core object of the framework */
 class Application
 {
 	const TEXTDOMAIN = 'Application';
@@ -79,6 +82,15 @@ class Application
 			
 			// Do action
 			$this->controller->init();
+			if(
+				!method_exists($this->controller, $action) && 
+				isset($this->request['action']) &&
+				method_exists($this->controller, $this->request['action'] . 'Action')
+			){
+				// Allow action to be passed in query string
+				$action = $this->request['action'] . 'Action';
+				$this->controller->setTemplate("$controllerRequest/{$this->request['action']}");
+			}
 			$this->controller->$action();
 			
 			// Render view
@@ -88,7 +100,11 @@ class Application
 			echo $output;
 		} catch (\Exception $e) {
 			$responseCode = ($e->getCode()) ?: 404;
-			http_response_code($responseCode);
+			if(function_exists('http_response_code')){
+				http_response_code($responseCode);
+			}else{
+				header($_SERVER['SERVER_PROTOCOL'] . ' ' . $responseCode);
+			}
 			if(!$this->controller){
 				$this->controller = new \Mvc\Controller\ErrorController($this);
 				// Retry boostrap
@@ -163,7 +179,7 @@ class Application
 	 * @return string
 	 */
 	public function dashesToCamelCase($string, $capitalizeFirstCharacter = false) {
-		return preg_replace_callback("/-[a-zA-Z]/", function(){
+		return preg_replace_callback("/-[a-zA-Z]/", function($matches){
 			return strtoupper($matches[0][1]);
 		}, $string);
 	}

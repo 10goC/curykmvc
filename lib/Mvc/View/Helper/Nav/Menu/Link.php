@@ -1,26 +1,81 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\View\Helper\Nav\Menu;
 
 use Mvc\View\Helper\Nav\Menu;
 
+/** A navigation menu link */
 class Link extends Menu
 {
+	/**
+	 * Whether the link corresponds to the current page
+	 * @var boolean
+	 */
 	var $active = false;
+	
+	/**
+	 * CSS class for the menu item
+	 * @var string
+	 */
 	var $class = false;
+	
+	/**
+	 * Href HTML attribute
+	 * @var string
+	 */
 	var $href = false;
+	
+	/**
+	 * Target HTML attribute
+	 * @var string
+	 */
 	var $target = false;
+	
+	/**
+	 * Menu item ID
+	 * @var string
+	 */
 	var $id;
+	
+	/**
+	 * The order number
+	 * @var int
+	 */
 	var $index;
+	
+	/**
+	 * The depth of the current menu element
+	 * @var int
+	 */
 	var $depth;
+	
 	/**
 	 * Parent element
 	 * @var Menu
 	 */
 	var $parent;
+	
+	/**
+	 * The text to display
+	 * @var string
+	 */
 	var $txt;
+	
+	/**
+	 * The target URL
+	 * @var string
+	 */
 	var $url;
 
-	public function __construct($link, $index, $depth, Menu $parent)
+	/**
+	 * Initialize object based on XML definition, order number and depth
+	 * @param Xml $link
+	 * @param int $index
+	 * @param int $depth
+	 * @param Menu $parent
+	 */
+	public function __construct(Xml $link, $index, $depth, Menu $parent)
 	{
 		// set parent
 		$this->parent = $parent;
@@ -51,20 +106,9 @@ class Link extends Menu
 		// false if external link
 		if(preg_match('#^http[s]?://#i', $this->url)) return false;
 		$request = $this->getRequest();
-		if(0){ // URLS_AUTO_NEST){
-			// check all depths
-			$request = explode('/', $request);
-			$matches = 0;
-			for($requestDepth = 0; $requestDepth < count($this->_currentPage) && $requestDepth < count($request); $requestDepth++){
-				if($request[$requestDepth] == $this->_currentPage[$requestDepth])
-					$matches++;
-			}
-			return $matches == count($this->_currentPage);
-		}else{
-			// check against request string
-			if($request == $this->url) return true;
-		}
-
+		
+		// check against request string
+		if($request == $this->prefix.$this->url) return true;
 	}
 
 	/**
@@ -74,9 +118,12 @@ class Link extends Menu
 	 * @return string
 	 */
 	private function _renderLiAnchorHref($link){
-		return property_exists($link->attributes(), 'url') ?
-		$this->parent->view->serverUrl((string) $link->attributes()->url, $this->prefix) :
-		$this->parent->view->serverUrl($this->cleanUrl($this->txt), $this->prefix);
+		$url = property_exists($link->attributes(), 'url') ?
+			(string) $link->attributes()->url :
+			$this->cleanUrl($this->txt)
+		;
+		if(preg_match('#^http[s]?://#i', $url)) return $url;
+		return $this->parent->view->baseUrl($this->prefix . $url);
 	}
 
 	/**
@@ -92,6 +139,11 @@ class Link extends Menu
 		return $out.'>'.$this->txt;
 	}
 	
+	/**
+	 * Clean string in order to obtain a valid URL
+	 * @param string $url
+	 * @return string
+	 */
 	public function cleanUrl($url)
 	{
 		return strtolower(preg_replace(array(
@@ -103,17 +155,26 @@ class Link extends Menu
 		), $url));
 	}
 	
+	/**
+	 * Get HTTP request
+	 * @return string
+	 */
 	public function getRequest()
 	{
 		$request = $this->parent->view->removeQs();
 		try {
-			$baseUrl = $this->parent->view->getController()->getApplication()->getConfig()->baseUrl;
+			$basepath = $this->parent->view->getController()->getApplication()->getConfig()->basepath;
 		} catch (\Exception $e) {
-			$baseUrl = '';
+			$basepath = '';
 		}
-		if($baseUrl){
-			$request = preg_replace("#^$baseUrl#", '', $request);
+		if($basepath){
+			// Remove Basepath
+			$request = preg_replace("#^$basepath#", '', $request);
 		}
+		// Remove html extension
+		$request = preg_replace('/\.html$/', '', $request);
+		
+		// Remove final slash
 		return trim($request, '/');
 	}
 

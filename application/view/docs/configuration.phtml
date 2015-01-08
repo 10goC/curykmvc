@@ -1,0 +1,19 @@
+<section id="configuration">
+	<h2>{{chapter}}. Configuration</h2>
+	<p>Two configuration files are loaded automatically:</p>
+	<ul>
+		<li>/application/config.global.php</li>
+		<li>/application/config.local.php</li>
+	</ul>
+	<p>Config.local.php should be excluded from version control.<br>
+	All configurations set in local file will override the global setup</p>
+	<section id="subdirectory">
+		<h3 id="configuration-subdir">{{chapter}}.1 Working in a subdirectory</h3>
+		<p>Include a key 'basepath' in config with the name of the subdirectory, i.e:<br>
+		<code>'basepath' => '/lib/mvc/trunk/public',</code></p>
+		<p>To make links work from within the view use baseUrl helper for generating absolute links inside the same domain, i.e:<br>
+		<code>echo $this->baseUrl('/assets/js/script.js')</code></p>
+		<p>Or serverUrl for full URLs, i.e:<br>
+		<code>echo $this->serverUrl('/assets/js/script.js')</code></p>
+	</section>
+</section>

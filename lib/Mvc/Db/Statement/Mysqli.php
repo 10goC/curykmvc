@@ -1,8 +1,14 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\Db\Statement;
 
 use Mvc\Db\Adapter\MysqliAdapter;
 
+/**
+ * Mysqli statement container class
+ * 
+ */
 class Mysqli
 {
 	/**
@@ -10,13 +16,48 @@ class Mysqli
 	 * @var Mvc\Db\Adapter\MysqliAdapter
 	 */
 	protected $adapter;
+	
+	/**
+	 * The statement object
+	 * @var \mysqli_stmt
+	 */
 	protected $resource;
+	
+	/**
+	 * Column names in the row
+	 * @var array
+	 */
 	protected $keys;
+	
+	/**
+	 * Values in the row
+	 * @var array
+	 */
 	protected $values;
+	
+	/**
+	 * Result metadata
+	 * @var \mysqli_result
+	 */
 	protected $meta;
+	
+	/**
+	 * The prepared statement SQL query
+	 * @var string
+	 */
 	protected $sql = '';
+	
+	/**
+	 * Whether the statement has already been prepared
+	 * @var bool
+	 */
 	protected $isPrepared = false;
 	
+	/**
+	 * Receives the mysqli adapter object and the SQL string.
+	 * @param MysqliAdapter $adapter
+	 * @param string $sql
+	 */
 	public function __construct(MysqliAdapter $adapter, $sql)
 	{
 		$this->adapter = $adapter;
@@ -24,7 +65,7 @@ class Mysqli
 	}
 	
 	/**
-	 * Prepare
+	 * Prepare statement
 	 *
 	 * @param string $sql
 	 * @throws \Exception

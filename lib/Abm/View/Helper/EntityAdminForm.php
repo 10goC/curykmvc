@@ -1,21 +1,251 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Abm\View\Helper;
 
 use Abm\Entity;
 use Abm\View;
 
+/** Entity admin form view helper */
 class EntityAdminForm
 {
+	/**
+	 * The Entity object
+	 * @var Abm\Entity
+	 */
 	protected $entity;
+	
+	/**
+	 * The View object
+	 * @var Abm\View
+	 */
 	protected $view;
 	
+	/**
+	 * The enctype HTML attribute for the form
+	 * @var string
+	 */
+	protected $enctype = '';
+	
+	/**
+	 * The entity Paginator object
+	 * @var Mvc\Paginator
+	 */
+	protected $paginator;
+	
+	/**
+	 * Database records
+	 * @var array
+	 */
+	protected $records = array();
+	
+	/**
+	 * A string for the legend HTML tag or a boolean value for determining whether to generate one
+	 * @var string|boolean
+	 */
+	public $legend = true;
+	
+	/**
+	 * Initialize object and remove Paginator from Entity
+	 * @param View $view
+	 * @param Entity $entity
+	 */
 	public function __construct(View $view, Entity $entity)
 	{
 		$this->entity = $entity;
 		$this->view = $view;
+		// Remove paginator
+		$this->paginator = $entity->getPaginator();
+		$this->entity->setPaginator(null);
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function render()
+	{
+		$entity = $this->entity;
+		$view = $this->view;
+		$forms = $this->getForms();
+		foreach($entity->getFields() as $field){
+			if($field->isFile()){
+				$this->enctype = 'enctype="multipart/form-data"';
+			}
+		}
+		$out[] = '<form '.$this->enctype.' action="" class="'.$entity->getCleanName().'-admin-form" method="post">';
+		foreach($forms as $action => $form){
+			if($action == 'delete'){
+				$out[] = '<fieldset>
+					'.$this->getLegend('delete');
+			}
+			foreach($form as $i){
+				if($action == 'delete'){
+					$out[] = $this->deleteForm($i);
+				}else{
+					$out[] = $this->innerForm($action, $i);
+				}
+			}
+			if($action == 'delete'){
+				$out[] = '</fieldset>';
+			}
+		}
+		$out[] = '<div class="form-group">
+				<input type="submit" class="btn btn-primary" value="'.$view->__('Save changes').'">
+				<p class="btn">
+					<a class="text-danger cancel-btn" href="'.$view->removeQs().'">
+						<span class="fa fa-ban"></span>
+						'.$view->__('Cancel').'
+					</a>
+				</p>
+			</div>
+		</form>';
+		return implode(PHP_EOL, $out);
+	}
+	
+	/**
+	 * Get legend HTML tag
+	 * @param string $action
+	 * @return string
+	 */
+	public function getLegend($action)
+	{
+		if($this->legend){
+			$legend = is_string($this->legend) ? $this->legend : $this->view->__(ucwords($action)).' '.$this->entity->getName();
+			return "<legend>$legend</legend>";
+		}
+		return '';
+	}
+	
+	/**
+	 * The fieldset for a certain actions to be performed
+	 * @param string $action
+	 * @param int $i An index number for the current action / entity
+	 * @return string
+	 */
+	public function innerForm($action, $i)
+	{
+		$entity = $this->entity;
+		$view = $this->view;
+		$formName = "{$action}_{$entity->getCleanName()}[$i]";
+		$formId = "{$action}_{$entity->getCleanName()}_$i";
+		
+		$out[] = '<fieldset>
+			'.$this->getLegend($action);
+		foreach($entity->getFields() as $field){
+			$fieldName = "{$formName}[{$field->getName()}]";
+			$fieldId   = "{$formId}_{$field->getName()}";
+			$fieldType = $field->getType();
+			$defaultValue = $field->defaultValue;
+			if($action == 'edit' && isset($this->records[$i])){
+				$defaultValue = $this->records[$i]->{$field->getName()};
+			}
+			$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
+			$out[] = "<div class=\"form-group $fieldType {$entity->getCleanName()}-{$field->getName()}-form-group\">
+			<label class=\"control-label\" for=\"$fieldId\"><span class=\"label-text\">{$field->getTitle()}</span>";
+			$required = $field->required ? 'required="required"' : '';
+			$class =  $entity->getCleanName().'-'.$field->getName();
+			switch ($fieldType) {
+				case 'textarea':
+					$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
+					$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
+					break;
+				case 'select':
+				case 'dbSelect':
+					$out[] = "<select class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $required>";
+					if($field->emptyFirstOption !== false){
+						$out[] = "<option value=\"\">$field->emptyFirstOption</option>";
+					}
+					$options = $field->getOptions();
+					foreach($options as $opVal => $option){
+						$selected = $opVal == $value ? 'selected="selected"' : '';
+						$out[] = "<option value=\"$opVal\" $selected>$option</option>";
+					}
+					$out[] = "</select>";
+					break;
+				case 'boolean':
+					$checked = $value ? 'checked="checked"' : '';
+					$out[] = "<input type=\"hidden\" name=\"$fieldName\" value=\"0\" />
+					<input type=\"checkbox\" name=\"$fieldName\" id=\"$fieldId\" value=\"1\" $checked />";
+					break;
+				case 'checkbox':
+					$options = $field->getOptions();
+					foreach($options as $opVal => $option){
+						$optionName = "{$fieldName}[$opVal]";
+						$optionId = "{$fieldId}_$opVal";
+						$checked = isset($value[$opVal]) && $value[$opVal] ? 'checked="checked"' : '';
+						$out[] = "<div class=\"checkbox\">
+						<label for=\"$optionId\">
+						<input type=\"hidden\" name=\"$optionName\" value=\"0\" />
+						<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"1\" $checked />
+						<span>$option</span>
+						</label>
+						</div>";
+					}
+					break;
+				case 'dbCheckbox':
+					$options = $field->getOptions();
+					foreach($options as $opVal => $option){
+						$optionName = "{$fieldName}[]";
+						$optionId = "{$fieldId}_$opVal";
+						$values = explode(',', $value);
+						$checked = $value && in_array($opVal, $values) ? 'checked="checked"' : '';
+						$out[] = "<div class=\"checkbox\">
+						<label for=\"$optionId\">
+						<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"$opVal\" $checked />
+						<span>$option</span>
+						</label>
+						</div>";
+					}
+					break;
+				default:
+					if($value){
+						$value = "value=\"$value\"";
+					}
+					if($fieldType == 'image'){
+						$fieldType = 'file';
+					}
+					$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
+					$out[] = "<input class=\"form-control $class\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value $placeholder $required />";
+					break;
+			}
+			$out[] = '</label>
+			</div>';
+		}
+		$out[] = '</fieldset>';
+		return implode(PHP_EOL, $out);
+	}
+	
+	/**
+	 * A form for deletion confirmation
+	 * @param int $i An index number for the current action / entity
+	 * @return string
+	 */
+	public function deleteForm($i)
+	{
+		$view = $this->view;
+		$entity = $this->entity;
+		$out = '';
+		if(isset($this->records[$i])){
+			$out = '<div class="bg-warning has-warning">
+				<div class="checkbox">
+					<label for="delete_'.$entity->getCleanName().'_'.$i.'">
+						<input type="hidden" name="delete_'.$entity->getCleanName().'['.$i.']" value="0">
+						<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$i.']" id="delete_'.$entity->getCleanName().'_'.$i.'" value="1">
+						<span class="fa fa-warning"></span>
+						<span>'.sprintf($view->__('Confirm deletion of %s?'), $this->records[$i]->{$entity->firstField()}).'</span>
+					</label>
+				</div>
+			</div>';
+		}
+		return $out;
+	}
+	
+	/**
+	 * Get the actions to be performed based on HTTP request
+	 * @return array
+	 */
+	public function getForms()
 	{
 		$forms = array();
 		$entity = $this->entity;
@@ -28,136 +258,41 @@ class EntityAdminForm
 				$forms['add'][] = $i;
 			}
 		}
-		if($edit && preg_match('/^[0-9]+(,[0-9]+)*$/', $edit)){
+		if($edit && preg_match('/^[0-9a-z_]+(,[0-9a-z_]+)*$/i', $edit)){
 			$forms['edit'] = explode(',', $edit);
 			$resultset = $entity->fetchIds($forms['edit']);
 			foreach($resultset as $row){
-				$record[$row->{$entity->getPrimaryKey()}] = $row;
+				$this->records[$row->{$entity->getPrimaryKey()}] = $row;
 			}
 		}
 		if($delete && preg_match('/^[0-9]+(,[0-9]+)*$/', $delete)){
-			$deleteIds = explode(',', $delete);
-			$resultset = $entity->fetchIds($deleteIds);
+			$forms['delete'] = explode(',', $delete);
+			$resultset = $entity->fetchIds($forms['delete']);
 			foreach($resultset as $row){
-				$record[$row->{$entity->getPrimaryKey()}] = $row;
+				$this->records[$row->{$entity->getPrimaryKey()}] = $row;
 			}
 		}
-		if(empty($forms) && empty($deleteIds)){
+		if(empty($forms) && empty($forms['delete'])){
 			$forms['add'][] = 0;
 		}
-		$out[] = '<form action="" method="post">';
-		foreach($forms as $action => $form){
-			foreach($form as $i){
-				$formName = "{$action}_{$entity->getCleanName()}[$i]";
-				$formId = "{$action}_{$entity->getCleanName()}_$i";
-				$out[] = '<fieldset>
-					<legend>'.$view->__(ucwords($action)).' '.$entity->getName().'</legend>';
-				foreach($entity->getFields() as $field){
-					$fieldName = "{$formName}[{$field->getName()}]";
-					$fieldId   = "{$formId}_{$field->getName()}";
-					$fieldType = $field->getType();
-					$defaultValue = null;
-					if($action == 'edit' && isset($record[$i])){
-						$defaultValue = $record[$i]->{$field->getName()};
-					}
-					$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
-					$out[] = "<div class=\"form-group $fieldType\">
-					<label for=\"$fieldId\">".$field->getTitle();
-					switch ($fieldType) {
-						case 'textarea':
-							$value =
-							$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\">$value</textarea>";
-							break;
-						case 'select':
-						case 'dbSelect':
-							$out[] = "<select class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\">";
-							$options = $field->getOptions();
-							foreach($options as $opVal => $option){
-								$selected = $opVal == $value ? 'selected="selected"' : '';
-								$out[] = "<option value=\"$opVal\" $selected>$option</option>";
-							}
-							$out[] = "</select>";
-							break;
-						case 'checkbox':
-							$options = $field->getOptions();
-							foreach($options as $opVal => $option){
-								$optionName = "{$fieldName}[$opVal]";
-								$optionId = "{$fieldId}_$opVal";
-								$checked = isset($value[$opVal]) && $value[$opVal] ? 'checked="checked"' : '';
-								$out[] = "<div class=\"checkbox\">
-									<label for=\"$optionId\">
-										<input type=\"hidden\" name=\"$optionName\" value=\"0\" />
-										<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"1\" $checked />
-										<span>$option</span>
-									</label>
-								</div>";
-							}
-							break;
-						case 'dbCheckbox':
-							$options = $field->getOptions();
-							foreach($options as $opVal => $option){
-								$optionName = "{$fieldName}[]";
-								$optionId = "{$fieldId}_$opVal";
-								$values = explode(',', $value);
-								$checked = $value && in_array($opVal, $values) ? 'checked="checked"' : '';
-								$out[] = "<div class=\"checkbox\">
-									<label for=\"$optionId\">
-										<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"$opVal\" $checked />
-										<span>$option</span>
-									</label>
-								</div>";
-							}
-							break;
-						default:
-							if($value){
-								$value = "value=\"$value\"";
-							}
-							$out[] = "<input class=\"form-control\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value />";
-							break;
-					}
-					$out[] = '</label>
-						</div>';
-				}
-				$out[] = '</fieldset>';
-			}
-		}
-		if(isset($deleteIds)){
-			$out[] = '<fieldset>
-				<legend>'.$view->__(ucwords('delete')).' '.$entity->getName().'</legend>';
-			foreach($deleteIds as $deleteId){
-				$out[] = '<div class="bg-warning has-warning">
-					<div class="checkbox">
-						<label for="delete_'.$entity->getCleanName().'_'.$deleteId.'">
-							<input type="hidden" name="delete_'.$entity->getCleanName().'['.$deleteId.']" value="0">
-							<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$deleteId.']" id="delete_'.$entity->getCleanName().'_'.$deleteId.'" value="1">
-							<span class="glyphicon glyphicon-warning-sign"></span>
-							<span>'.sprintf($view->__('Confirm deletion of %s?'), $record[$deleteId]->{$entity->firstField()}).'</span>
-						</label>
-					</div>
-				</div>';
-			}
-			$out[] = '</fieldset>';
-		}
-		$out[] = '<div class="form-group">
-				<input type="submit" class="btn btn-primary" value="'.$view->__('Save changes').'">
-				<p class="btn">
-					<a class="text-danger" href="'.$view->removeQs().'">
-						<span class="glyphicon glyphicon-ban-circle"></span>
-						'.$view->__('Cancel').'
-					</a>
-				</p>
-			</div>
-		</form>';
-		return implode(PHP_EOL, $out);
+		return $forms;
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function __toString()
 	{
 		try {
 			$return = $this->render();
 		} catch (\Exception $e) {
-			$return = $e->getMessage();
+			$entity = $this->entity;
+			$entity->addMessage($e->getMessage(), $entity::ERROR);
+			$return = $this->view->renderMessages($entity->getMessages());
 		}
+		// Restore paginator
+		$this->entity->setPaginator($this->paginator);
 		return $return;
 	}
 }

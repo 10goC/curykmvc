@@ -1,0 +1,34 @@
+<section id="db">
+	<h2>{{chapter}}. Interacción con la base de datos</h2>
+	<p>La configuración de la base de datos va en los archivos de configuración (ver la <a href="#configuration">sección configuración</a>) y requiere que se especifiquen al menos estos valores:</p>
+	<ul>
+		<li>db
+			<ul>
+				<li>host</li>
+				<li>user</li>
+				<li>pass</li>
+				<li>name</li>
+			</ul>
+		</li>
+	</ul>
+	<h3>{{chapter}}.1 El modelo Table</h3>
+	<p>El modelo Mvc\Db\Table puede ser extendido por tos propios modelos o usado directamente mediante la creación de una nueva instancia y proveyendo una nombre de tabla al constructor, ej.:<br>
+	<code>$table = new Table($this, 'table_name');</code></p>
+	<p>Se puede extender la clas y definir la propiedad protegida $table para poder instanciar la clase sin pasar el segundo parámetro al constructor.</p>
+	<p>Este modelo tiene los siguientes métodos:</p>
+	<ul>
+		<li><code><strong>fetch</strong>( $select, $bind = array() )</code><br>
+		Toma dos argumentos. El primero es una cadena SQL que puede contener marcadores '?' y el segundo es un array opcional de valores para ser enlazados en caso de existir marcadores en la consulta.<br>
+		Realiza una consulta SQL y devuelve un objeto de tipo Resultset conteniendo las filas obtenidas. Se puede acceder a este objeto como si fuera un array.</li>
+		<li><code><strong>insert</strong>(array $values)</code><br>
+		Toma un argumento, el cual es un array asociativo de valores a ser insertados, donde los nombres de los índices se deben corresponder con los nombres de las columnas.<br>
+		Devuelve el valor de la clave primaria de la fila insertada en caso de éxito o null en caso de error.</li>
+		<li><code><strong>update</strong>($key, $id, $values)</code><br>
+		Toma tres argumentos. El primero es una cadena representando el nombre de la columna a ser utilizada como referencia (ésta suele ser la clave primaria).<br>
+		El segundo es el valor (usualmente la ID) de la fila a ser actualizada.
+		Y el tercer argumento es un array asociativo de valores, donde los nombres de los índices se deben corresponder con los nombres de las columnas.</li>
+		<li><code><strong>delete</strong>($key, $id)</code><br>
+		Toma dos argumentos. El primero es una cadena representando el nombre de la columna a ser utilizada como referencia (ésta suele ser la clave primaria).<br>
+		El segundo el el valor (usualmente la ID) de la fila a ser eliminada.</li>
+	</ul>
+</section>

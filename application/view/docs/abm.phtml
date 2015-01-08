@@ -1,0 +1,12 @@
+<section id="abm">
+	<h2>{{chapter}}. CRUD (Abm)</h2>
+	<h3>{{chapter}}.1 Controller</h3>
+	<p>The CRUD Controller must extend Abm\Controller.</p>
+	<pre>namespace Application\Controller;<br><br>use Abm\Controller;<br><br>class EntityController extends Controller<br>{<br>&nbsp;&nbsp;&nbsp;&nbsp;...<br>}</pre>
+	<h3>{{chapter}}.2 Entities</h3>
+	<p>All Abm models should extend Abm\Entity.</p>
+	<p>The protected variable $fields can be defined in two ways:<br>
+	<code>protected $fields = array('Name', 'Address');</code></p>
+	<p>Or use an associative multidimensional array to specify more options</p>
+	<pre>protected $fields = array(<br>&nbsp;&nbsp;&nbsp;&nbsp;'name' => array(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'title' => 'Your name'<br>&nbsp;&nbsp;&nbsp;&nbsp;),<br>&nbsp;&nbsp;&nbsp;&nbsp;'address' => array(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'type' => 'dbSelect',<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'source' => 'Application\Model\Address'<br>&nbsp;&nbsp;&nbsp;&nbsp;)<br>)</pre>
+</section>

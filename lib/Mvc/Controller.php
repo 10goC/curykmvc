@@ -1,6 +1,9 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
+/** The controller class. Where all apllication actions live. All controllers should extend this class. */
 class Controller
 {
 	const NOTICE  = 'notice';
@@ -10,44 +13,44 @@ class Controller
 	const FLASH_MESSAGES = 'controller_flash_messages';
 	
 	/**
-	 * The application
+	 * The application.
 	 * @var Mvc\Application
 	 */
 	protected $application;
 	
 	/**
-	 * The view object
+	 * The view object.
 	 * @var Mvc\View
 	 */
 	protected $view;
 	
 	/**
-	 * The view object class
+	 * The view object class.
 	 * @var string
 	 */
 	protected $viewClass = 'Mvc\\View';
 	
 	/**
-	 * The name of the layout template to use
+	 * The name of the layout template to use.
 	 * @var string
 	 */
 	protected $layout = 'layout';
 	
 	/**
-	 * The name of the template to use for rendering the current view
+	 * The name of the template to use for rendering the current view.
 	 * @var string
 	 */
 	protected $template;
 	
 	/**
-	 * A container for controller messages
+	 * A container for controller messages.
 	 * @var array
 	 */
 	protected $messages = array();
 	
 	/**
-	 * Store application injected object and initialize view
-	 * @param Application $application
+	 * Store application injected object and initialize view.
+	 * @param Mvc\Application $application the application gets automatically injected into the controller
 	 */
 	public function __construct(Application $application)
 	{
@@ -64,12 +67,13 @@ class Controller
 		}
 	}
 	
+	/** This method runs before any action in the controller. */
 	public function init()
 	{
 	}
 	
 	/**
-	 * Change the layout template
+	 * Change the layout template.
 	 * @param string $layout
 	 */
 	public function setLayout($layout)
@@ -78,7 +82,7 @@ class Controller
 	}
 	
 	/**
-	 * Get layout template to use
+	 * Get layout template to use.
 	 * @return string
 	 */
 	public function getLayout()
@@ -87,7 +91,7 @@ class Controller
 	}
 	
 	/**
-	 * Disable layout (view template will render on itself)
+	 * Disable layout (view template will be rendered alone).
 	 */
 	public function disableLayout()
 	{
@@ -95,7 +99,7 @@ class Controller
 	}
 	
 	/**
-	 * Set template to render
+	 * Set template to render.
 	 * @param string $template
 	 */
 	public function setTemplate($template)
@@ -104,7 +108,7 @@ class Controller
 	}
 	
 	/**
-	 * Get current template
+	 * Get current template.
 	 * @return string
 	 */
 	public function getTemplate()
@@ -113,7 +117,7 @@ class Controller
 	}
 	
 	/**
-	 * Get view object
+	 * Get the view object.
 	 * @return \Mvc\View
 	 */
 	public function getView()
@@ -122,7 +126,7 @@ class Controller
 	}
 	
 	/**
-	 * Gets the application
+	 * Gets the application.
 	 * @return \Mvc\Application
 	 */
 	public function getApplication()
@@ -131,7 +135,7 @@ class Controller
 	}
 	
 	/**
-	 * Generate output
+	 * Generate output.
 	 */
 	public function renderView()
 	{
@@ -139,7 +143,7 @@ class Controller
 	}
 	
 	/**
-	 * Return GET param
+	 * Return GET param.
 	 * @param string $param
 	 * @param mixed $default
 	 * @return mixed
@@ -151,7 +155,7 @@ class Controller
 	}
 	
 	/**
-	 * Return HTTP POST variable
+	 * Return HTTP POST variable.
 	 * @param string $index
 	 * @param mixed $default
 	 * @return mixed
@@ -161,6 +165,11 @@ class Controller
 		return isset($_POST[$index]) ? $_POST[$index] : $default;
 	}
 	
+	/**
+	 * Get a reference to $_SESSION superglobal. Call it as reference, i.e: $session = &$this->getSession().
+	 * @param string $section the name of the section to fetch. If the key does not exist in SESSION array, create it and return an empty array.
+	 * @return array|string
+	 */
 	public function &getSession($section = null)
 	{
 		if(!isset($_SESSION)){
@@ -175,39 +184,75 @@ class Controller
 		return $_SESSION;
 	}
 	
-	public function setOutputType($type)
+	/**
+	 * Change the output for the action.
+	 * @param string $type The desired output type. Possible values: json|attachment
+	 * @param array|string $options The options will depend on the type, i.e: in case of attachment type,the options variable must be the attachment filename.
+	 */
+	public function setOutputType($type, $options = null)
 	{
 		switch (strtolower($type)) {
 			case 'json':
 				$this->setTemplate(null);
 				$this->setLayout(null);
 				header('Content-type: application/json');
-			break;
+				break;
+			case 'attachment':
+				$filename = $options ? $options : 'download';
+				header('Content-type: application/octet-stream');
+				header("Content-Description: File Transfer");
+				header('Content-Disposition: attachment; filename="'.$filename.'"');
+				break;
 		}
 	}
 	
+	/**
+	 * Get controller messages.
+	 * @return array
+	 */
 	public function getMessages()
 	{
 		return $this->messages;
 	}
 	
+	/**
+	 * Add a message to the controller.
+	 * @param string $message
+	 * @param string $type Can be anything. The most common types are defined as class constants: NOTICE|ERROR|SUCCESS
+	 */
 	public function addMessage($message, $type = self::NOTICE)
 	{
 		if(!isset($this->messages[$type])) $this->messages[$type] = array();
 		array_push($this->messages[$type], $message);
 	}
 	
+	/**
+	 * Add a message to be displayed on the next action.
+	 * @param string $message
+	 * @param string $type can be anything. The most common types are defined as class constants: NOTICE|ERROR|SUCCESS
+	 */
 	public function addFlashMessage($message, $type = self::NOTICE)
 	{
 		$session = &$this->getSession(self::FLASH_MESSAGES);
 		$session[$type][] = $message;
 	}
 	
+	/**
+	 * Redirect the browser to another URL.
+	 * @param string $url
+	 */
 	public function redirect($url)
 	{
 		die(header("location:$url"));
 	}
 	
+	/**
+	 * Throw an exception when a certain method does not exist in controller.
+	 * The exception message assumes that the called method is an non-existent action (probable cause: bad URL). 
+	 * @param string $action
+	 * @param array $arguments
+	 * @throws \Exception
+	 */
 	public function __call($action, $arguments)
 	{
 		$controllerShortName = new \ReflectionClass($this);

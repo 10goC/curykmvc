@@ -1,0 +1,73 @@
+<style>.tag{ padding:5px; border-radius:5px; }</style>
+<section id="start">
+	<h2>{{chapter}}. Para comenzar</h2>
+	<p>Esta guía intentará establecer los lineamientos generales para desarrollar un proyecto utilizando esta librería y framework MVC para PHP.</p>
+	<h3>{{chapter}}.1 Estructura de directorios</h3>
+	<p>El proyecto deberá contener la siguiente estructura:</p>
+	<pre>
+application/
+	Application/
+		Controller/
+		Model/
+		Boostrap.php
+	languages/
+	view/
+	config.global.php
+	config.local.php
+lib/
+	Abm/
+	Mvc/
+public/
+	.htaccess
+	index.php</pre>
+
+	<p>Nota: <em>La carpeta /lib podría no estar presente dentro del proyecto, sino enlazada desde otra ubicación.</em></p>
+	
+	<p>Cada solicitud HTTP pasará por /public/index.php, el cual a su vez cargará la librería, analizará la solicitud, llamará al controlador correspondiente y renderizará una vista (a menos que el controlador diga lo contrario).</p>
+	<p>La forma ideal de consguir esto es creando virtual host, de manera tal que el directorio raíz del sitio web sea /public.<br>
+	En caso de no ser posible por restricciones en la configuración del servidor, deberá existir un archivo .htaccess dentro del directorio raíz apuntando todas las solicitudes al directorio /public.</p>
+	
+	<h3>{{chapter}}.2 Flujo de trabajo</h3>
+	<p>Por defecto, todas las solicitudes serán analizadas de la siguiente forma:</p>
+	<p>http://domain.com/<span class="tag bg-danger text-danger">basepath</span>/<span class="tag bg-success text-success">controller</span>/<span class="tag bg-info text-info">action</span></p>
+	<p>El <span class="tag bg-danger text-danger">basepath</span> es opcional y puede ser definido en la configuración (ver la sección <a href="#configuration-subdir">configuración</a>)</p>
+	<h4>{{chapter}}.2.1 Controlador</h4>
+	<p>Un <span class="tag bg-success text-success">controlador</span> deberá ser creado haciendo coincidir el nombre con el fragmento de la URL, ej.:</p>
+	<p>Supongamos la siguiente URL: <code>http://domain.com/basepath/start</code></p>
+	<ol>
+		<li>Crear un archivo llamado /application/Application/Controller/StartController.php</li>
+		<li>El código del controlador sería el siguiente:</li>
+	</ol>
+	<pre>&lt;?php namespace Application\Controller;
+	
+use Mvc\Controller;
+	
+class StartController extends Controller
+{
+}</pre>
+	<h4>{{chapter}}.2.2 Acción</h4>
+	<p>Siguiendo con el ejemplo anterior, dado que no se ha especificado ninguna <span class="tag bg-info text-info">action</span> en la URL, se asumirá <strong>index</strong> por defecto. Por lo tanto, crear una acción index dentro del controlador:</p>
+	<pre>&lt;?php namespace Application\Controller;
+	
+use Mvc\Controller;
+	
+class StartController extends Controller
+{
+	public function indexAction()
+	{
+	}
+}</pre>
+
+	<h4>{{chapter}}.2.3 Vista</h4>
+	<p>Crear una plantilla para renderizar la vista. Los archivos de plantillas deben contener la extensión PHTML.</p>
+	<p>Siguiendo con el mismo ejemplo, el archivo estaría ubicado en /application/view/start/index.phtml</p>
+	
+	<h4>{{chapter}}.2.4 Layout</h4>
+	<p>Por defecto todas las acciones serán renderizadas dentro de un layout. Esto puede se deshabilitado desde dentro del controlador, así:<br>
+	<code>$this->setLayout(null);</code></p>
+	<p>El layout por defecto está ubicado en <em>/application/view/layout/layout.phtml</em>.</p>
+	<p>El mismo método del controlador se usa para cambiar el layout a usar.<br>
+	<code>$this->setLayout( 'otro-layout' );</code></p>
+	<p>El archivo phtml debe estar ubicado en el mismo directorio (en este caso <em>/application/view/layout/<strong>otro-layout</strong>.phtml</em>).</p>
+	
+</section>

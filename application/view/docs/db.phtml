@@ -1,0 +1,34 @@
+<section id="db">
+	<h2>{{chapter}}. Database interaction</h2>
+	<p>Database configuration goes in config files (see <a href="#configuration">configuration section</a>) and require at least these options to be set:</p>
+	<ul>
+		<li>db
+			<ul>
+				<li>host</li>
+				<li>user</li>
+				<li>pass</li>
+				<li>name</li>
+			</ul>
+		</li>
+	</ul>
+	<h3>{{chapter}}.1 The Table model</h3>
+	<p>The Mvc\Db\Table model can be extended by your own models or used directly by creating a new instance and providing a table name to the constructor, i.e:<br>
+	<code>$table = new Table($this, 'table_name');</code></p>
+	<p>You can extend the class and set the protected $table property to be able to instantiate the class without passing the second parameter to the constructor.</p>
+	<p>This model has the following methods:</p>
+	<ul>
+		<li><code><strong>fetch</strong>( $select, $bind = array() )</code><br>
+		Takes up to two arguments. The first is a SQL string that may contain '?' placeholders and the second is an optional array of values to be bound in case placeholders are present in the query.<br>
+		Makes a SQL select query and returns a Resultset object containing the rows fetched. This object can be accessed like an array.</li>
+		<li><code><strong>insert</strong>(array $values)</code><br>
+		Takes one argument, which is an associative array of values to be inserted, where the key names should correspond to column names.<br>
+		Returns the inserted row primary key value on success or null in case of failure.</li>
+		<li><code><strong>update</strong>($key, $id, $values)</code><br>
+		Takes three arguments. The first one is a string representing the column name to be used as a reference (this will usually be the primary key).<br>
+		The second one is the value (usually the ID) of the row to be updated.
+		And the third argument is an associative array of values, where the key names should correspond to column names.</li>
+		<li><code><strong>delete</strong>($key, $id)</code><br>
+		Takes two arguments. The first one is a string representing the column name to be used as a reference (this will usually be the primary key).<br>
+		The second one is the value (usually the ID) of the row to be deleted.</li>
+	</ul>
+</section>

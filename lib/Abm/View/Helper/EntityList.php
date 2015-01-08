@@ -1,58 +1,98 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Abm\View\Helper;
 
 use Abm\Entity;
 use Abm\View;
 
+/** View Helper for creating automated Entity listings */
 class EntityList
 {
+	/**
+	 * The Entity object
+	 * @var Abm\Entity
+	 */
 	protected $entity;
+	
+	/**
+	 * The View object from which the helper has been invoked
+	 * @var Abm\View
+	 */
 	protected $view;
+	
+	/**
+	 * The array of options
+	 * @var array
+	 */
 	protected $options;
 	
+	/**
+	 * An array of fields to be ommitted from listing
+	 * @var array
+	 */
+	protected $hide = array();
+	
+	/**
+	 * Receives the injected View and Entity objects and options
+	 * @param View $view
+	 * @param Entity $entity
+	 * @param array $options
+	 */
 	public function __construct(View $view, Entity $entity, $options = array())
 	{
 		$this->view = $view;
 		$this->entity = $entity;
 		$this->options = $options;
+		if(isset($options['hide'])) $this->hide = $options['hide'];
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function render()
 	{
-		try {
-			$view = $this->view;
-			$entity = $this->entity;
-			$options = $this->options;
-			$out = array();
-			$list = $entity->fetch();
-			$actions = isset($options['actions']) ? $options['actions'] : $entity->getActions();
-			// Remove add action
-			if(in_array('add', $actions)){
-				unset($actions[array_search('add', $actions)]);
-			}
-			if($list && count($list)){
-				$out[] = "<table class=\"$view->listClass\">
-				{$this->entityListHeader($entity, $actions, $options)}
-				{$this->entityListBody($entity, $list, $actions, $options)}
-				</table>";
-			}else{
-				$out[] = '<p>'.sprintf($view->__('No %s found'), $entity->getPlural()).'</p>';
-			}
-			if($messages = $entity->getMessages()){
-				array_unshift($out, $view->renderMessages($messages));
-			}
-			return implode(PHP_EOL, $out);
-		} catch (\Exception $e) {
-			return $e->getMessage();
+		$view = $this->view;
+		$entity = $this->entity;
+		$options = $this->options;
+		$out = array();
+		$list = $entity->fetchOptions($this->options);
+		$actions = isset($options['actions']) ? $options['actions'] : $entity->getActions();
+		// Remove add action
+		if(in_array('add', $actions)){
+			unset($actions[array_search('add', $actions)]);
 		}
+		if($list && count($list)){
+			$out[] = "<table class=\"$view->listClass\">
+			{$this->entityListHeader($entity, $actions, $options)}
+			{$this->entityListBody($entity, $list, $actions, $options)}
+			</table>";
+		}else{
+			$out[] = '<p>'.sprintf($view->__('No %s found'), $entity->getPlural()).'</p>';
+		}
+		if($messages = $entity->getMessages()){
+			array_unshift($out, $view->renderMessages($messages));
+			$entity->flushMessages();
+		}
+		return implode(PHP_EOL, $out);
 	}
 	
+	/**
+	 * Generate output for the list header
+	 * @param Entity $entity
+	 * @param array $actions
+	 * @param array $options
+	 * @return string
+	 */
 	protected function entityListHeader(Entity $entity, $actions, $options)
 	{
 		$out[] = "<thead>
 		<tr>";
 		foreach($entity->getFields() as $field){
-			$out[] = '<th>'.$field->getTitle().'</th>';
+			if(!in_array($field->getName(), $this->hide)){
+				$out[] = '<th>'.$field->getTitle().'</th>';
+			}
 		}
 		if(!empty($actions)){
 		$colspan = count($actions) > 1 ? 'colspan="'.count($actions).'"' : '';
@@ -63,6 +103,14 @@ class EntityList
 		return implode(PHP_EOL, $out);
 	}
 
+	/**
+	 * Generate output for the list body
+	 * @param Entity $entity
+	 * @param Mvc\Db\Resultset $list
+	 * @param array $actions
+	 * @param array $options
+	 * @return string
+	 */
 	protected function entityListBody(Entity $entity, $list, $actions, $options)
 	{
 		$view = $this->view;
@@ -70,37 +118,19 @@ class EntityList
 		foreach($list as $row){
 			$out[] = '<tr>';
 			foreach($entity->getFields() as $field){
-				$value = $row->{$field->getName()};
-				switch ($field->getType()) {
-					case 'dbSelect':
-						$source = $field->getOptions();
-						$out[] = "<td>{$source[$value]}</td>";
-						break;
-					
-					case 'dbCheckbox':
-						$source = $field->getOptions();
-						$values = explode(',', $value);
-						$value = implode(', ', 
-							array_intersect_key(
-								$source,
-								array_flip($values) 
-							)
-						);
-						$out[] = "<td>$value</td>";
-						break;
-					
-					default:
-						$out[] = "<td>$value</td>";
-						break;
+				if(!in_array($field->getName(), $this->hide)){
+					$value = $row->{$field->getName()};
+					$out[] = "<td>{$field->render($row)}</td>";
 				}
 			}
 			if(!empty($actions)){
 				foreach($actions as $action){
-					$param = "{$action}_{$entity->getCleanName()}";
+					if($action == 'order') $action = 'move up';
+					$param = str_replace(' ', '', "{$action}_{$entity->getCleanName()}");
 					$id = $row->{$entity->getPrimaryKey()};
 					$out[] = "<td><a href=\"?$param=$id\">
 					<span class=\"fa fa-{$this->getIcon($action)} fa-lg\"></span>
-					<span class=\"text\">".$view->__(ucwords($action))."</span>
+					<span class=\"text\">".$view->__(ucfirst($action))."</span>
 					</a></td>";
 				}
 			}
@@ -110,17 +140,34 @@ class EntityList
 		return implode(PHP_EOL, $out);
 	}
 	
+	/**
+	 * Get icon name for default actions
+	 * @param string $action
+	 * @return string
+	 */
 	public function getIcon($action)
 	{
 		$icons = array(
 			'edit' => 'edit',
-			'delete' => 'trash'
+			'delete' => 'trash',
+			'move up' => 'arrow-up',
 		);
 		return isset($icons[$action]) ? $icons[$action] : '';
 	}
 	
+	/**
+	 * Generate output
+	 * @return string
+	 */
 	public function __toString()
 	{
-		return $this->render();
+		try {
+			$return = $this->render();
+		} catch (\Exception $e) {
+			$entity = $this->entity;
+			$entity->addMessage($e->getMessage(), $entity::ERROR);
+			$return = $this->view->renderMessages($entity->getMessages());
+		}
+		return $return;
 	}
 }

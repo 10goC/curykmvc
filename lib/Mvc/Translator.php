@@ -1,6 +1,9 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc;
 
+/** Provides string translation funcionality */
 class Translator
 {
 	/**
@@ -21,18 +24,32 @@ class Translator
 	 */
 	protected $texts;
 	
+	/**
+	 * Receives the injected Controller
+	 * @param Controller $controller
+	 */
 	public function __construct(Controller $controller)
 	{
 		$this->controller = $controller;
 		
 	}
 	
+	/**
+	 * Translate a string
+	 * @param string $str
+	 * @param string $textDomain
+	 * @return string
+	 */
 	public function translate($str, $textDomain = 'Application')
 	{
 		$texts = $this->getTexts();
 		return isset($texts[$textDomain][$str]) ? $texts[$textDomain][$str] : $str;
 	}
 	
+	/**
+	 * Load a text domain
+	 * @param string $domain
+	 */
 	public function loadTextDomain($domain)
 	{
 		$libraries = $this->controller->getApplication()->getConfig()->libraries->toArray();
@@ -45,11 +62,19 @@ class Translator
 		}
 	}
 	
+	/**
+	 * Get all translation strings
+	 * @return array
+	 */
 	public function getTexts()
 	{
 		return $this->texts;
 	}
 	
+	/**
+	 * Set language
+	 * @param string $lang
+	 */
 	public function setLang($lang)
 	{
 		$this->lang = $lang;

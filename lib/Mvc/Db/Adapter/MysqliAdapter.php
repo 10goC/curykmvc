@@ -1,12 +1,23 @@
 <?php
+/** Comlei Mvc Framework */
+
 namespace Mvc\Db\Adapter;
 
 use Mvc\Db\Statement\Mysqli as MysqliStatement;
 
+/** Mysqli database adapter */
 class MysqliAdapter extends AbstractAdapter
 {
+	/**
+	 * A mysqli statement
+	 * @var Mvc\Db\Statement\Mysqli
+	 */
 	protected $stmt;
 	
+	/**
+	 * Setup the database connection
+	 * @see \Mvc\Db\Adapter\AdapterInterface::setDb()
+	 */
 	public function setDb()
 	{
 		@$this->db = new \mysqli(
@@ -43,11 +54,19 @@ class MysqliAdapter extends AbstractAdapter
 		return $stmt;
 	}
 	
+	/**
+	 * Returns last insert ID
+	 * @see \Mvc\Db\Adapter\AdapterInterface::insertedId()
+	 */
 	public function insertedId()
 	{
 		return $this->getDb()->insert_id;
 	}
 	
+	/**
+	 * Returns number of rows affected by last query
+	 * @see \Mvc\Db\Adapter\AdapterInterface::affectedRows()
+	 */
 	public function affectedRows()
 	{
 		return $this->getDb()->affected_rows;
