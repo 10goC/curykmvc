@@ -134,9 +134,10 @@ class Link extends Menu
 	{
 		// print <A>
 		$out = '<a';
+		$txt = method_exists($this->parent->view, '__') ? $this->parent->view->__($this->txt) : $this->txt;
 		if($this->href)   $out .= ' href="'.$this->href.'"';
 		if($this->target) $out .= ' target="'.$this->target.'"';
-		return $out.'>'.$this->txt;
+		return $out.'>'.$txt;
 	}
 	
 	/**

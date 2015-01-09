@@ -34,6 +34,12 @@ class EntityList
 	protected $hide = array();
 	
 	/**
+	 * HTML Template for displaying page info
+	 * @var string
+	 */
+	public $pageInfoTemplate = '<div class="page-info">Showing results {start} to {end} of {total}</div>';
+	
+	/**
 	 * Receives the injected View and Entity objects and options
 	 * @param View $view
 	 * @param Entity $entity
@@ -64,18 +70,50 @@ class EntityList
 			unset($actions[array_search('add', $actions)]);
 		}
 		if($list && count($list)){
+			$out[] = $this->renderPageInfo();
 			$out[] = "<table class=\"$view->listClass\">
 			{$this->entityListHeader($entity, $actions, $options)}
 			{$this->entityListBody($entity, $list, $actions, $options)}
 			</table>";
 		}else{
-			$out[] = '<p>'.sprintf($view->__('No %s found'), $entity->getPlural()).'</p>';
+			$out[] = '<p>'.sprintf($view->__('No %s found', $view::TEXTDOMAIN), $entity->getPlural()).'</p>';
 		}
 		if($messages = $entity->getMessages()){
 			array_unshift($out, $view->renderMessages($messages));
 			$entity->flushMessages();
 		}
 		return implode(PHP_EOL, $out);
+	}
+	
+	/**
+	 * Render information about current page
+	 * @return string
+	 */
+	public function renderPageInfo()
+	{
+		if($this->entity->getPaginator()){
+			return str_replace(
+				array('{start}', '{end}', '{total}'),
+				array(
+					$this->entity->getPaginator()->getPageFirstItem(),
+					$this->entity->getPaginator()->getPageLastItem(),
+					$this->entity->getPaginator()->getTotalItems()
+				),
+				$this->view->__($this->pageInfoTemplate)
+			);
+		}
+		return '';
+	}
+	
+	/**
+	 * Set HTML template for showing information about current page
+	 * @param string $template
+	 * @return \Abm\View\Helper\EntityList
+	 */
+	public function setPageInfoTemplate($template)
+	{
+		$this->pageInfoTemplate = $template;
+		return $this;
 	}
 	
 	/**
@@ -129,8 +167,10 @@ class EntityList
 					$param = str_replace(' ', '', "{$action}_{$entity->getCleanName()}");
 					$id = $row->{$entity->getPrimaryKey()};
 					$out[] = "<td><a href=\"?$param=$id\">
-					<span class=\"fa fa-{$this->getIcon($action)} fa-lg\"></span>
-					<span class=\"text\">".$view->__(ucfirst($action))."</span>
+					<span class=\"action $action\" title=\"".$view->__(ucfirst($action), $view::TEXTDOMAIN)."\">
+						<span class=\"fa fa-{$this->getIcon($action)} fa-lg\"></span>
+						<span class=\"text\">".$view->__(ucfirst($action), $view::TEXTDOMAIN)."</span>
+					</span>
 					</a></td>";
 				}
 			}

@@ -4,6 +4,7 @@
 namespace Abm;
 
 use Abm\View\Helper\EntityList;
+use Mvc\Application;
 use Mvc\View as MvcView;
 
 /** An extension of the Mvc\View class with a couple additional helpers for CRUD actions */
@@ -57,11 +58,12 @@ class View extends MvcView
 	/**
 	 * Translate a string
 	 * @param string $str
+	 * @param string $textDomain
 	 * @return string
 	 */
-	public function __($str)
+	public function __($str, $textDomain = Application::TEXTDOMAIN)
 	{
-		return $this->getController()->getTranslator()->translate($str, self::TEXTDOMAIN);
+		return $this->getController()->getTranslator()->translate($str, $textDomain);
 	}
 	
 }

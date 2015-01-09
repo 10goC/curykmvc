@@ -91,11 +91,11 @@ class EntityAdminForm
 			}
 		}
 		$out[] = '<div class="form-group">
-				<input type="submit" class="btn btn-primary" value="'.$view->__('Save changes').'">
+				<input type="submit" class="btn btn-primary" value="'.$view->__('Save changes', $view::TEXTDOMAIN).'">
 				<p class="btn">
 					<a class="text-danger cancel-btn" href="'.$view->removeQs().'">
 						<span class="fa fa-ban"></span>
-						'.$view->__('Cancel').'
+						'.$view->__('Cancel', $view::TEXTDOMAIN).'
 					</a>
 				</p>
 			</div>
@@ -111,7 +111,8 @@ class EntityAdminForm
 	public function getLegend($action)
 	{
 		if($this->legend){
-			$legend = is_string($this->legend) ? $this->legend : $this->view->__(ucwords($action)).' '.$this->entity->getName();
+			$view = $this->view;
+			$legend = is_string($this->legend) ? $this->legend : $this->view->__(ucwords($action), $view::TEXTDOMAIN).' '.$this->entity->getName();
 			return "<legend>$legend</legend>";
 		}
 		return '';
@@ -120,15 +121,15 @@ class EntityAdminForm
 	/**
 	 * The fieldset for a certain actions to be performed
 	 * @param string $action
-	 * @param int $i An index number for the current action / entity
+	 * @param int $entityIndex An index number for the current action / entity
 	 * @return string
 	 */
-	public function innerForm($action, $i)
+	public function innerForm($action, $entityIndex)
 	{
 		$entity = $this->entity;
 		$view = $this->view;
-		$formName = "{$action}_{$entity->getCleanName()}[$i]";
-		$formId = "{$action}_{$entity->getCleanName()}_$i";
+		$formName = "{$action}_{$entity->getCleanName()}[$entityIndex]";
+		$formId = "{$action}_{$entity->getCleanName()}_$entityIndex";
 		
 		$out[] = '<fieldset>
 			'.$this->getLegend($action);
@@ -137,8 +138,8 @@ class EntityAdminForm
 			$fieldId   = "{$formId}_{$field->getName()}";
 			$fieldType = $field->getType();
 			$defaultValue = $field->defaultValue;
-			if($action == 'edit' && isset($this->records[$i])){
-				$defaultValue = $this->records[$i]->{$field->getName()};
+			if($action == 'edit' && isset($this->records[$entityIndex])){
+				$defaultValue = $this->records[$entityIndex]->{$field->getName()};
 			}
 			$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
 			$out[] = "<div class=\"form-group $fieldType {$entity->getCleanName()}-{$field->getName()}-form-group\">
@@ -146,6 +147,32 @@ class EntityAdminForm
 			$required = $field->required ? 'required="required"' : '';
 			$class =  $entity->getCleanName().'-'.$field->getName();
 			switch ($fieldType) {
+				case 'date':
+					$date   = preg_match('/([0-9]{4})-([0-9]{2})-([0-9]{2})/', $value, $datePart);
+					$day    = $date ? $datePart[3] : '';
+					$month  = $date ? $datePart[2] : '';
+					$year   = $date ? $datePart[1] : '';
+					$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+					$fields['D'] = "<select class=\"form-control\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
+						<option value=\"\">{$this->view->__('Day')}</option>";
+						for($d = 1; $d <= 31; $d++){
+							$selected = $day == $d ? 'selected="selected"' : '';
+							$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
+						}
+					$fields['D'] .= "</select>";
+					$fields['M'] = "<select class=\"form-control\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
+						<option value=\"\">{$this->view->__('Month')}</option>";
+						foreach($months as $m => $monthName){
+							$mm = $m +1;
+							$selected = $month == $mm ? 'selected="selected"' : '';
+							$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName)}</option>";
+						}
+					$fields['M'] .= "</select>";
+					$fields['Y'] = "<input placeholder=\"{$this->view->__('year')}\" class=\"form-control\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
+					foreach(str_split($field->dateFieldsOrder) as $i){
+						$out[] = $fields[$i];
+					}
+					break;
 				case 'textarea':
 					$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
 					$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
@@ -218,22 +245,22 @@ class EntityAdminForm
 	
 	/**
 	 * A form for deletion confirmation
-	 * @param int $i An index number for the current action / entity
+	 * @param int $entityIndex An index number for the current action / entity
 	 * @return string
 	 */
-	public function deleteForm($i)
+	public function deleteForm($entityIndex)
 	{
 		$view = $this->view;
 		$entity = $this->entity;
 		$out = '';
-		if(isset($this->records[$i])){
+		if(isset($this->records[$entityIndex])){
 			$out = '<div class="bg-warning has-warning">
 				<div class="checkbox">
-					<label for="delete_'.$entity->getCleanName().'_'.$i.'">
-						<input type="hidden" name="delete_'.$entity->getCleanName().'['.$i.']" value="0">
-						<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$i.']" id="delete_'.$entity->getCleanName().'_'.$i.'" value="1">
+					<label for="delete_'.$entity->getCleanName().'_'.$entityIndex.'">
+						<input type="hidden" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" value="0">
+						<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" id="delete_'.$entity->getCleanName().'_'.$entityIndex.'" value="1">
 						<span class="fa fa-warning"></span>
-						<span>'.sprintf($view->__('Confirm deletion of %s?'), $this->records[$i]->{$entity->firstField()}).'</span>
+						<span>'.sprintf($view->__('Confirm deletion of %s?', $view::TEXTDOMAIN), $this->records[$entityIndex]->{$entity->firstField()}).'</span>
 					</label>
 				</div>
 			</div>';

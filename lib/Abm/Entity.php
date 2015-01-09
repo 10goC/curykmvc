@@ -670,6 +670,9 @@ class Entity
 			$sql .= ' LIMIT '.$this->paginator->getStartIndex().', '.$this->paginator->getItemsPerPage();
 		}
 		$result = $table->fetch($sql, $bind);
+		if($this->paginator){
+			$this->paginator->setPageTotalItems(count($result));
+		}
 		return $result;
 	}
 	
@@ -935,6 +938,10 @@ class Entity
 				case 'dbCheckbox':
 					$callbackValues = isset($data[$field->getName()]) ? $data[$field->getName()] : null;
 					$this->callbacks[] = array('field' => $field, 'values' => $callbackValues);
+					break;
+				case 'date':
+					$value = isset($data[$field->getName()]) ? $data[$field->getName()] : $field->defaultValue;
+					$values[$field->getName()] = is_array($value) ? $value['y'].'-'.$value['m'].'-'.$value['d'] : $value;
 					break;
 				default:
 					$values[$field->getName()] = isset($data[$field->getName()]) ? $data[$field->getName()] : $field->defaultValue;

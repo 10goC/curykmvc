@@ -72,6 +72,12 @@ class Field
 	protected $uploadUrl;
 	
 	/**
+	 * Order of field components for dates
+	 * @var string
+	 */
+	public $dateFieldsOrder = 'MDY';
+	
+	/**
 	 * Default value
 	 * @var string
 	 */
@@ -113,6 +119,7 @@ class Field
 			if(isset($field['required'])) $this->required = $field['required'];
 			if(isset($field['placeholder'])) $this->placeholder = $field['placeholder'];
 			if(isset($field['default'])) $this->defaultValue = $field['default'];
+			if(isset($field['dateFieldsOrder'])) $this->dateFieldsOrder = $field['dateFieldsOrder'];
 			if(isset($field['uploadDir'])) $this->setUploadDir($field['uploadDir']);
 			if(isset($field['uploadUrl'])){
 				$this->setUploadUrl($field['uploadUrl']);
@@ -312,7 +319,7 @@ class Field
 				// Translate again using Application text domain
 				$word = $this->getEntity()->__($word, Application::TEXTDOMAIN);
 				$value = '<span class="'.strtolower($values[$value]).'">
-					<span class="fa fa-'.$icons[$value].'" title="'.$word.'">
+					<span class="fa fa-'.$icons[$value].'" title="'.$word.'"></span>
 					<span class="text">'.$word.'</span>
 				</span>';
 				break;

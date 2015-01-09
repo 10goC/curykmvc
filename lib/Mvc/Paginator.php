@@ -43,6 +43,12 @@ class Paginator
 	protected $totalItems;
 	
 	/**
+	 * The number of items in current page
+	 * @var int
+	 */
+	protected $pageTotalItems;
+	
+	/**
 	 * The number of pages to show when rendering page numbers navigation links.
 	 * @var int
 	 */
@@ -59,6 +65,24 @@ class Paginator
 	 * @var string
 	 */
 	public $perPageParam = 'perPage';
+	
+	/**
+	 * The HTML tag for the wrapper element
+	 * @var string
+	 */
+	public $wrapperTag = 'div';
+	
+	/**
+	 * HTML Template to prepend to page number i.e.: <li>
+	 * @var string
+	 */
+	public $beforePageNumber = '';
+	
+	/**
+	 * HTML Template to append to page number i.e.: </li>
+	 * @var string
+	 */
+	public $afterPageNumber = '';
 	
 	/**
 	 * Store the injected controller.
@@ -98,11 +122,47 @@ class Paginator
 	/**
 	 * Get the index of the first element of the resultset to be fetched.
 	 * Can be used to generate SQL query for a specific page.
-	 * @return number
+	 * @return int
 	 */
 	public function getStartIndex()
 	{
 		return $this->getItemsPerPage() * ($this->getCurrentPage() -1);
+	}
+	
+	/**
+	 * Get index number of the first element of current page
+	 * @return int
+	 */
+	public function getPageFirstItem()
+	{
+		return $this->getStartIndex() + 1;
+	}
+	
+	/**
+	 * Get index number of the last element of current page
+	 * @return int
+	 */
+	public function getPageLastItem()
+	{
+		return $this->getStartIndex() + $this->getPageTotalItems();
+	}
+	
+	/**
+	 * Get items count for current page
+	 * @return int
+	 */
+	public function getPageTotalItems()
+	{
+		return $this->pageTotalItems;
+	}
+	
+	/**
+	 * Set number of total items in current page
+	 * @param int $number
+	 */
+	public function setPageTotalItems($number)
+	{
+		$this->pageTotalItems = $number;
 	}
 	
 	/**
@@ -197,15 +257,15 @@ class Paginator
 		$view = $this->controller->getView();
 		// Previous page
 		if($prev = $this->getPrevPage()){
-			$out[] = '<a class="prev-page" href="'.$this->getPageLink($prev).'"><span>'.$view->__('Previous').'</span></a>';
+			$out[] = '<a class="prev-page" href="'.$this->getPageLink($prev).'"><span>'.$view->__('Previous', $view::TEXTDOMAIN).'</span></a>';
 		}else{
-			$out[] = '<span class="prev-page disabled">'.$view->__('Previous').'</span>';
+			$out[] = '<span class="prev-page disabled">'.$view->__('Previous', $view::TEXTDOMAIN).'</span>';
 		}
 		// Next page
 		if($next = $this->getNextPage()){
-			$out[] = '<a class="next-page" href="'.$this->getPageLink($next).'"><span>'.$view->__('Next').'</span></a>';
+			$out[] = '<a class="next-page" href="'.$this->getPageLink($next).'"><span>'.$view->__('Next', $view::TEXTDOMAIN).'</span></a>';
 		}else{
-			$out[] = '<span class="next-page disabled">'.$view->__('Next').'</span>';
+			$out[] = '<span class="next-page disabled">'.$view->__('Next', $view::TEXTDOMAIN).'</span>';
 		}
 		return implode(PHP_EOL, $out);
 	}
@@ -216,26 +276,26 @@ class Paginator
 	 */
 	public function renderPageNumbers()
 	{
-		$out[] = '<div class="page-numbers">';
+		$out[] = '<'.$this->wrapperTag.' class="page-numbers">';
 		$pagesBack = ceil(($this->showPages -1) /2);
 		$pagesAhead = floor(($this->showPages -1) /2);
 		$firstPage = $this->getCurrentPage() -$pagesBack;
 		if($firstPage < 1) $firstPage = 1;
-		if($firstPage > 1) $out[] = '<a class="page-number first-page" href="'.$this->getPageLink(1).'">1</a>';
-		if($firstPage > 2) $out[] = '<span class="pages-inbetween">...</span>';
+		if($firstPage > 1) $out[] = $this->beforePageNumber.'<a class="page-number first-page" href="'.$this->getPageLink(1).'">1</a>'.$this->afterPageNumber;
+		if($firstPage > 2) $out[] = $this->beforePageNumber.'<span class="pages-inbetween">...</span>'.$this->afterPageNumber;
 		$lastPage = $this->getTotalPages();
 		if($lastPage > $this->getCurrentPage() +$pagesAhead) $lastPage = $this->getCurrentPage() +$pagesAhead;
 		if($lastPage < $this->showPages) $lastPage = $this->showPages;
 		for($i = $firstPage; $i <= $lastPage; $i++){
 			if($i == $this->getCurrentPage()){
-				$out[] = "<span class=\"page-number disabled\">$i</span>";
+				$out[] = "$this->beforePageNumber<span class=\"page-number disabled\">$i</span>$this->afterPageNumber";
 			}else{
-				$out[] = '<a class="page-number" href="'.$this->getPageLink($i).'">'.$i.'</a>';
+				$out[] = $this->beforePageNumber.'<a class="page-number" href="'.$this->getPageLink($i).'">'.$i.'</a>'.$this->afterPageNumber;
 			}
 		}
-		if($lastPage < $this->getTotalPages() -1) $out[] = '<span class="pages-inbetween">...</span>';
-		if($lastPage < $this->getTotalPages()) $out[] = '<a class="page-number last-page" href="'.$this->getPageLink($this->getTotalPages()).'">'.$this->getTotalPages().'</a>';
-		$out[] = '</div>';
+		if($lastPage < $this->getTotalPages() -1) $out[] = $this->beforePageNumber.'<span class="pages-inbetween">...</span>'.$this->afterPageNumber;
+		if($lastPage < $this->getTotalPages()) $out[] = $this->beforePageNumber.'<a class="page-number last-page" href="'.$this->getPageLink($this->getTotalPages()).'">'.$this->getTotalPages().'</a>'.$this->afterPageNumber;
+		$out[] = '</'.$this->wrapperTag.'>';
 		return implode(PHP_EOL, $out);
 	}
 	
