@@ -26,7 +26,7 @@ return array(
 	'%s moved up successfully' => '%s déplacé vers le haut avec succès',
 	' %s moved up successfully' => ' %s déplacé vers le haut avec succès',
 	'Confirm deletion of %s?' => 'Confirmez la suppression de %s?',
-	'No %s found' => 'pas trouvé %s',
+	'No %s found' => 'Pas trouvé %s',
 	'Cancel' => 'Annuler',
 	'Previous' => 'Précédent',
 	'Next' => 'Suivant',

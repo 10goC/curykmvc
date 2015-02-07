@@ -79,7 +79,7 @@ class Target extends Entity
 		$delete = $data ? array_diff($prevData, $data) : $prevData;
 		$affectedRows = 0;
 		if($delete){
-			$affectedRows += $this->delete(array_flip($delete));
+			$affectedRows += $this->delete(array_keys($delete));
 		}
 		foreach($insert as $value){
 			$values[$this->foreignKey] = $foreignKeyValue;

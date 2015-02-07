@@ -123,7 +123,7 @@ class Link extends Menu
 			$this->cleanUrl($this->txt)
 		;
 		if(preg_match('#^http[s]?://#i', $url)) return $url;
-		return $this->parent->view->baseUrl($this->prefix . $url);
+		return $this->getView()->baseUrl($this->prefix . $url);
 	}
 
 	/**
@@ -134,7 +134,10 @@ class Link extends Menu
 	{
 		// print <A>
 		$out = '<a';
-		$txt = method_exists($this->parent->view, '__') ? $this->parent->view->__($this->txt) : $this->txt;
+		if($this->linkCount){
+			$out .= ' class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"';
+		}
+		$txt = method_exists($this->getView(), '__') ? $this->getView()->__($this->txt) : $this->txt;
 		if($this->href)   $out .= ' href="'.$this->href.'"';
 		if($this->target) $out .= ' target="'.$this->target.'"';
 		return $out.'>'.$txt;
@@ -162,9 +165,9 @@ class Link extends Menu
 	 */
 	public function getRequest()
 	{
-		$request = $this->parent->view->removeQs();
+		$request = $this->getView()->removeQs();
 		try {
-			$basepath = $this->parent->view->getController()->getApplication()->getConfig()->basepath;
+			$basepath = $this->getView()->getController()->getApplication()->getConfig()->basepath;
 		} catch (\Exception $e) {
 			$basepath = '';
 		}
@@ -177,6 +180,19 @@ class Link extends Menu
 		
 		// Remove final slash
 		return trim($request, '/');
+	}
+	
+	/**
+	 * Get view object
+	 * @return \Mvc\View
+	 */
+	public function getView()
+	{
+		$item = $this;
+		while(!$item->view){
+			$item = $item->parent;
+		}
+		return $item->view;
 	}
 
 }

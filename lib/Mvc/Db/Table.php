@@ -86,6 +86,15 @@ class Table
 	}
 	
 	/**
+	 * Get table name
+	 * @return string
+	 */
+	public function getName()
+	{
+		return $this->table;
+	}
+	
+	/**
 	 * Make a SELECT query to database and return a Resultset object
 	 * @param string $select The SQL query to execute
 	 * @param array $bind (Optional) An array of values to be bound into 
@@ -159,14 +168,30 @@ class Table
 	/**
 	 * Delete a record from the database
 	 * @param string $key The primary key column name
-	 * @param string $id The primary key value
+	 * @param array|int|string $ids The primary key value(s)
 	 * @return int|NULL The number of affected rows or null on failure.
 	 */
-	public function delete($key, $id)
+	public function delete($key, $ids)
 	{
-		$placeholders = $this->getPlaceholders($id);
-		$query = "DELETE FROM $this->table WHERE $key IN( $placeholders )";
-		$result = $this->getDb()->query($query, $id);
+		if(is_array($key)){
+			$bind = array();
+			foreach($ids as $id){
+				$bind = array_merge($bind, explode(',', $id));
+				$wherePart = array();
+				foreach ($key as $k){
+					$wherePart[] = "$k = ?";
+				}
+				$where[] = '('.implode(' AND ', $wherePart).')';
+			}
+			$where = implode(' OR ', $where);
+			$query = "DELETE FROM $this->table WHERE $where";
+		}else{
+			$placeholders = $this->getPlaceholders($ids);
+			$query = "DELETE FROM $this->table WHERE $key IN( $placeholders )";
+			$bind = $ids;
+		}
+		
+		$result = $this->getDb()->query($query, $bind);
 		if($result){
 			return $this->getDb()->affectedRows();
 		}

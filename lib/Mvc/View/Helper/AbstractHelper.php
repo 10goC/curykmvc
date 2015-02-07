@@ -28,5 +28,14 @@ abstract class AbstractHelper
 	public function __construct(View $view, $arguments = null)
 	{
 		$this->view = $view;
+		$this->args = $arguments;
 	}
+	
+	public function __toString()
+	{
+		return $this->render();
+	}
+	
+	public abstract function render();
+	
 }

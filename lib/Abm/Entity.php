@@ -136,6 +136,12 @@ class Entity
 	 */
 	private $fieldObjects;
 	
+	/**
+	 * The index number of current action
+	 * @var number|string
+	 */
+	public $currentActionId;
+	
 	const NOTICE  = 'notice';
 	const ERROR   = 'error';
 	const SUCCESS = 'success';
@@ -202,7 +208,8 @@ class Entity
 			}
 		}
 		if($this->table && !$this->table instanceof Table){
-			throw new \Exception(sprintf('Incorrect table class specified for entity %s', $this->name));
+			die($this->table);
+			throw new \Exception(sprintf('Incorrect table class '.get_class($this->table).' specified for entity %s', $this->name));
 			$this->table = false;
 		}
 		return $this->table;
@@ -286,7 +293,8 @@ class Entity
 	 */
 	public function firstField()
 	{
-		return reset($this->getFields())->getName();
+		$fields = $this->getFields();
+		return reset($fields)->getName();
 	}
 	
 	/**
@@ -391,6 +399,7 @@ class Entity
 					$add = $this->getPostValues('add');
 					if($add){
 						foreach($add as $i => $values){
+							$this->currentActionId = $i;
 							$values = $this->getInsertValues($values);
 							if($this->abort){
 								$this->abort = false;	
@@ -409,6 +418,7 @@ class Entity
 					$edit = $this->getPostValues('edit');
 					if($edit){
 						foreach($edit as $id => $values){
+							$this->currentActionId = $id;
 							$values = $this->getUpdateValues($values);
 							if($this->abort){
 								$this->abort = false;
@@ -427,6 +437,7 @@ class Entity
 					$delete = isset($_POST["delete_$entityName"]) ? $_POST["delete_$entityName"] : null;
 					if($delete){
 						foreach($delete as $id => $value){
+							$this->currentActionId = $id;
 							if(is_numeric($id) && $value == 1){
 								$deleteIds[] = $id;
 							}
@@ -494,6 +505,15 @@ class Entity
 	public function flushMessages()
 	{
 		$this->messages = array();
+	}
+	
+	/**
+	 * Empty the array of future messages.
+	 */
+	public function flushFlashMessages()
+	{
+		$session = &$this->getController()->getSession(self::FLASH_MESSAGES);
+		$session[$this->getCleanName()] = array();
 	}
 	
 	/**
@@ -605,36 +625,71 @@ class Entity
 	 * Get a list of database records for this entity.
 	 * @param string $where (Optional) Where clause for SQL query
 	 * @param array $bind (Optional) An array of values to be bound into the query 
+	 * @param array $options (Optional) Options for building the query
 	 * WHERE clause. Question mark (?) placeholders must be present in $where
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetch($where = 1, $bind = array())
+	public function fetch($where = 1, $bind = array(), $options = array())
 	{
 		$table = $this->getTable();
 		if(!$table) return array();
-		$from = "`$this->tableName`";
-		$columns[] = "`$this->tableName`.`{$this->getPrimaryKey()}`";
+		$pk = $this->getPrimaryKey();
+		if(is_array($pk)){
+			foreach($pk as $pkc){
+				$columns[] = "`$this->tableName`.`$pkc`";
+			}
+		}else{
+			$columns[] = "`$this->tableName`.`$pk`";
+		}
 		$group = "";
 		$order = "";
+		$tables = array($this->tableName => 'main');
+		if(isset($options['join'])){
+			if(is_string($options['join'])){
+				$tables[$options['join']] = array('join' => 'INNER');
+			}else{
+				foreach($options['join'] as $tableName => $table){
+					if(is_string($table)){
+						$tables[$table] = array('join' => 'INNER');
+					}else{
+						if(!isset($table['join'])){
+							$table['join'] = 'INNER';
+						}
+						$tables[$tableName] = $table;
+					}
+				}
+			}
+		}
 		foreach ($this->getFields() as $field){
+			$fieldTable = $field->table->getName();
+			if(!isset($tables[$fieldTable])){
+				$tables[$fieldTable] = array('join' => $field->join);
+			}
+			if($field->ref){
+				$ref = "`$fieldTable`.`$field->ref`";
+				if(!in_array($ref, $columns)){
+					$columns[] = $ref;
+				}
+			}
 			if($field->getType() == 'dbCheckbox'){
 				$columns[] = "GROUP_CONCAT({$field->getTarget()->firstField()} SEPARATOR ',') AS `{$field->getName()}`";
 				$targetTable = $field->getTarget()->getTableName();
 				$foreignKey = $field->getTarget()->getForeignKey();
-				$from .= " LEFT JOIN `$targetTable` ON `$this->tableName`.`{$this->getPrimaryKey()}` = `$targetTable`.`$foreignKey`";
+				$tables[$targetTable] = array('join' => 'LEFT', 'on' => "`$this->tableName`.`{$this->getPrimaryKey()}` = `$targetTable`.`$foreignKey`");
+				// $from .= " LEFT JOIN `$targetTable` ON `$this->tableName`.`{$this->getPrimaryKey()}` = `$targetTable`.`$foreignKey`";
 				$group = "GROUP BY `$this->tableName`.`{$this->getPrimaryKey()}`";
 			}else{
-				$columns[] = "`$this->tableName`.`{$field->getName()}`";
+				$columns[] = "`$fieldTable`.`{$field->getName()}`";
 			}
 		}
 		if($this->isCategorized()){
-			$catField = "`$this->tableName`.`{$this->categorized['field']}`";
+			$catField = "`$fieldTable`.`{$this->categorized['field']}`";
 			if(!in_array($catField, $columns)){
 				$columns[] = $catField;
 			}
 		}
 		if($this->isOrdered()){
-			$orderField = "`$this->tableName`.`{$this->ordered['field']}`";
+			$orderField = "`$fieldTable`.`{$this->ordered['field']}`";
 			if(!in_array($orderField, $columns)){
 				$columns[] = $orderField;
 			}
@@ -642,8 +697,22 @@ class Entity
 				$order = " ORDER BY $orderField";
 			}
 		}
+		foreach($tables as $table => $fromTable){
+			if($fromTable == 'main'){
+				$from = "`$table`";
+			}else{
+				$from .= " {$fromTable['join']} JOIN `$table`";
+				if(isset($fromTable['on'])){
+					$from .= " ON {$fromTable['on']}";
+				}else{
+					$using = isset($fromTable['using']) ? $fromTable['using'] : $pk;
+					$from .= " USING( `$using` )";
+				}
+			}
+		}
 		$columns = implode(', ', $columns);
-		$result = $this->fetchSql("SELECT $columns FROM $from WHERE $where $group $order", $bind);
+		$sql = "SELECT $columns FROM $from WHERE $where $group $order";
+		$result = $this->fetchSql($sql, $bind);
 		return $result;
 	}
 	
@@ -661,7 +730,7 @@ class Entity
 		if($this->paginator){
 			$countSql = preg_replace(
 				array('/SELECT.*FROM/is', '/GROUP BY.*/i' ), 
-				array('SELECT COUNT(DISTINCT `'.$this->getPrimaryKey().'` ) AS `count` FROM ', ''), 
+				array('SELECT COUNT(DISTINCT `'.$this->getTableName().'`.`'.$this->getPrimaryKey().'` ) AS `count` FROM ', ''), 
 				$sql
 			);
 			$result = $table->fetch($countSql, $bind);
@@ -686,18 +755,22 @@ class Entity
 	 */
 	public function fetchOptions(array $options = array(), $where = 1, $bind = array())
 	{
-		return $this->fetch($where = 1, $bind = array());
+		return $this->fetch($where, $bind, $options);
 	}
 	
 	/**
 	 * Fetch rows from database based on primary key values.
 	 * @param array $ids
+	 * @param string $key
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetchIds($ids)
+	public function fetchIds($ids, $key = null)
 	{
+		if(!$key){
+			$key = $this->primaryKey;
+		}
 		$placeholders = array_fill(0, count((array) $ids), '?');
-		return $this->fetch("`$this->tableName`.`$this->primaryKey` IN( ".implode(', ', $placeholders)." )", (array) $ids);
+		return $this->fetch("`$this->tableName`.`$key` IN( ".implode(', ', $placeholders)." )", (array) $ids);
 	}
 	
 	/**
@@ -715,7 +788,16 @@ class Entity
 		$out = array();
 		$result = $this->fetch($where, $bind);
 		foreach($result as $row){
-			$out[$row->{$this->primaryKey}] = $row->{$this->firstField()};
+			if(is_array($this->primaryKey)){
+				$idPart = array();
+				foreach($this->primaryKey as $key){
+					$idPart[] = $row->$key;
+				}
+				$id = implode(',', $idPart);
+			}else{
+				$id = $row->{$this->primaryKey};
+			}
+			$out[$id] = $row->{$this->firstField()};
 		}
 		return $out;
 	}
@@ -749,14 +831,23 @@ class Entity
 				}
 				$this->getTable()->getDb()->query($sql, $bind);
 			}
-			if($this->callbacks){
-				foreach($this->callbacks as $callback){
-					$target = $callback['field']->getTarget();
-					$target->insertRelated($callback['values'], $result);
-				}
-			}
+			$this->afterInsert($result);
 		}
 		return $result;
+	}
+	
+	/**
+	 * Actions to be performed after a successful insert
+	 * @param int $insertId
+	 */
+	public function afterInsert($insertId)
+	{
+		if($this->callbacks){
+			foreach($this->callbacks as $callback){
+				$target = $callback['field']->getTarget();
+				$target->insertRelated($callback['values'], $insertId);
+			}
+		}
 	}
 	
 	/**
@@ -793,31 +884,66 @@ class Entity
 			}
 		}
 		
-		$success = $table->update($this->getPrimaryKey(), $id, $values);
-		if($success && $recategorize){
-			// Category changed, move up items to fill the gap
-			$sql = "UPDATE `{$this->getTableName()}`
-			SET `$ordField` = `$ordField` -1
-			WHERE `$ordField` > $rowOrder
-			AND `$catField` = ?";
-			$bind = array($row->$catField);
-			$this->getTable()->getDb()->query($sql, $bind);
-			
-			if($this->defaultOrder() == self::ORDER_FIRST){
-				// Default first, move down the rest
+		$success = 0;
+		
+		if($values){
+			$success = $table->update($this->getPrimaryKey(), $id, $values);
+			if($success && $recategorize){
+				// Category changed, move up items to fill the gap
 				$sql = "UPDATE `{$this->getTableName()}`
-				SET `$ordField` = `$ordField` +1
-				WHERE `{$this->getPrimaryKey()}` != $id
+				SET `$ordField` = `$ordField` -1
+				WHERE `$ordField` > $rowOrder
 				AND `$catField` = ?";
-				$bind = array($values[$catField]);
+				$bind = array($row->$catField);
 				$this->getTable()->getDb()->query($sql, $bind);
+					
+				if($this->defaultOrder() == self::ORDER_FIRST){
+					// Default first, move down the rest
+					$sql = "UPDATE `{$this->getTableName()}`
+					SET `$ordField` = `$ordField` +1
+					WHERE `{$this->getPrimaryKey()}` != $id
+					AND `$catField` = ?";
+					$bind = array($values[$catField]);
+					$this->getTable()->getDb()->query($sql, $bind);
+				}
+					
 			}
-			
 		}
+		
+		$success += $this->afterUpdate($id);
+		
+		return $success;
+	}
+	
+	/**
+	 * Actions to be performed after an update
+	 * @param int $id
+	 * @return number
+	 */
+	public function afterUpdate($id)
+	{
+		$success = 0;
 		if($this->callbacks){
 			foreach($this->callbacks as $callback){
-				$target = $callback['field']->getTarget();
-				$success += $target->updateRelated($callback['values'], $id);
+				$field = $callback['field'];
+				if($field->table != $this->table){
+					if($field->ref){
+						foreach((array) $callback['values'] as $ref => $value){
+							$success += $field->table->update(
+								array($this->getPrimaryKey(), $field->ref),
+								array($id, $ref),
+								array($field->getName() => $value)
+							);
+						}
+					}else{
+						$target = $field->getTarget();
+						$success += $target->updateRelated($callback['values'], $id);
+					}
+					// unset($values[$field->getName()]);
+				}else{
+					$target = $field->getTarget();
+					$success += $target->updateRelated($callback['values'], $id);
+				}
 			}
 		}
 		return $success;
@@ -910,8 +1036,15 @@ class Entity
 	 */
 	public function getValues($action, $data)
 	{
+		$values = array();
 		foreach($this->getFields() as $field){
-			switch ($field->getType()) {
+			$fieldType = $field->getType();
+			if($field->table != $this->table){
+				$callbackValues = isset($data[$field->getName()]) ? $data[$field->getName()] : null;
+				$this->callbacks[] = array('field' => $field, 'values' => $callbackValues);
+				continue;
+			}
+			switch ($fieldType) {
 				case 'file':
 				case 'image':
 					$file = $data['$_FILES'][$field->getName()];
@@ -940,8 +1073,26 @@ class Entity
 					$this->callbacks[] = array('field' => $field, 'values' => $callbackValues);
 					break;
 				case 'date':
+				case 'time':
+				case 'datetime':
+					$isDate = strpos($fieldType, 'date') !== false;
+					$isTime = strpos($fieldType, 'time') !== false;
 					$value = isset($data[$field->getName()]) ? $data[$field->getName()] : $field->defaultValue;
-					$values[$field->getName()] = is_array($value) ? $value['y'].'-'.$value['m'].'-'.$value['d'] : $value;
+					$second = isset($value['s']) ? $value['s'] : 0;
+					$dateValue = $isDate && is_array($value) ? str_pad($value['y'], 4, '0', STR_PAD_LEFT).'-'.str_pad($value['m'], 2, '0', STR_PAD_LEFT).'-'.str_pad($value['d'], 2, '0', STR_PAD_LEFT) : '';
+					$timeValue = $isTime && is_array($value) ? str_pad($value['h'], 2, '0', STR_PAD_LEFT).':'.str_pad($value['min'], 2, '0', STR_PAD_LEFT).'-'.str_pad($second, 2, '0', STR_PAD_LEFT) : '';
+					// Is time
+					if($isTime) $dateTimeValue = $timeValue;
+					// Is Date
+					if($isDate){
+						$dateTimeValue = $dateValue;
+						// Is Date-Time
+						if($isTime) $dateTimeValue .= " $timeValue";
+					}
+					if(strpos($dateTimeValue, '0000-00-00') !== false){
+						$dateTimeValue = null;
+					}
+					$values[$field->getName()] = is_array($value) ? $dateTimeValue : $value;
 					break;
 				default:
 					$values[$field->getName()] = isset($data[$field->getName()]) ? $data[$field->getName()] : $field->defaultValue;

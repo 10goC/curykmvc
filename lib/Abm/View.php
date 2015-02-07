@@ -25,6 +25,12 @@ class View extends MvcView
 	public $entityAdminFormHelperClass = 'Abm\View\Helper\EntityAdminForm';
 	
 	/**
+	 * Class name of the helper to use for the entityList method
+	 * @var string
+	 */
+	public $entityListHelperClass = 'Abm\View\Helper\EntityList';
+	
+	/**
 	 * Renders one or more forms according to the required actions for one entity (add, delete, etc)
 	 * @param Entity $entity
 	 * @param array $options
@@ -48,7 +54,8 @@ class View extends MvcView
 	 */
 	public function entityList(Entity $entity, $options = array())
 	{
-		$helper = new EntityList($this, $entity, $options);
+		$helperClass = isset($options['helper']) ? $options['helper'] : $this->entityListHelperClass;
+		$helper = new $helperClass($this, $entity, $options);
 		if(isset($options['listClass'])){
 			$this->listClass = $options['listClass'];
 		}

@@ -5,6 +5,7 @@ namespace Abm\Entity;
 
 use Mvc\Application;
 use Mvc\Db\Row;
+use Mvc\Db\Table;
 use Abm\Entity;
 use Abm\Entity\Field\Target;
 
@@ -78,6 +79,12 @@ class Field
 	public $dateFieldsOrder = 'MDY';
 	
 	/**
+	 * Field components for time fields
+	 * @var string
+	 */
+	public $timeFields = 'hm';
+	
+	/**
 	 * Default value
 	 * @var string
 	 */
@@ -96,6 +103,24 @@ class Field
 	public $required = false;
 	
 	/**
+	 * The database table where this field belongs
+	 * @var Mvc\Db\Table
+	 */
+	public $table;
+	
+	/**
+	 * The reference column for fields from different table
+	 * @var string
+	 */
+	public $ref;
+	
+	/**
+	 * JOIN clause mode (INNER|LEFT) in case this is a field from a different table
+	 * @var string
+	 */
+	public $join;
+	
+	/**
 	 * Initialize the object based on provided definition
 	 * @param Entity $entity
 	 * @param string $fieldId
@@ -108,10 +133,14 @@ class Field
 			if(is_string($field)){
 				$this->name = $field;
 				$this->title = $field;
+				$this->setTable($entity->getTable());
 			}
 		}else{
 			$this->name = $fieldId;
 			$this->title = isset($field['title']) ? $field['title']: $fieldId;
+			$table = isset($field['table']) ? $field['table'] : $entity->getTable();
+			$this->setTable($table);
+			if(isset($field['ref'])) $this->ref = $field['ref'];
 			if(isset($field['type'])) $this->type = $field['type'];
 			if(isset($field['options'])) $this->setOptions($field['options']);
 			if(isset($field['source'])) $this->setSource($field['source']);
@@ -120,6 +149,7 @@ class Field
 			if(isset($field['placeholder'])) $this->placeholder = $field['placeholder'];
 			if(isset($field['default'])) $this->defaultValue = $field['default'];
 			if(isset($field['dateFieldsOrder'])) $this->dateFieldsOrder = $field['dateFieldsOrder'];
+			if(isset($field['timeFields'])) $this->timeFields = $field['timeFields'];
 			if(isset($field['uploadDir'])) $this->setUploadDir($field['uploadDir']);
 			if(isset($field['uploadUrl'])){
 				$this->setUploadUrl($field['uploadUrl']);
@@ -150,6 +180,15 @@ class Field
 	}
 	
 	/**
+	 * Set the field display name
+	 * @param string $title
+	 */
+	public function setTitle($title)
+	{
+		$this->title = $title;
+	}
+	
+	/**
 	 * Get the corresponding database column name
 	 * @return string
 	 */
@@ -165,6 +204,33 @@ class Field
 	public function getType()
 	{
 		return $this->type;
+	}
+	
+	/**
+	 * Set field table
+	 * @param string|object $table
+	 * @throws \Exception
+	 */
+	public function setTable($table)
+	{
+		if(is_object($table)){
+			if($table instanceof Table){
+				$this->table = $table;
+			}else{
+				throw new \Exception('Field table must extend Mvc\Db\Table');
+			}
+		}else{
+			$table = (string) $table;
+			try {
+				if(class_exists($table)){
+					$tableObject = new $table($this->getEntity()->getController());
+				}
+			} catch (\Exception $e) {
+				$tableObject = new Table($this->getEntity()->getController(), $table);
+			}
+			$this->table = $tableObject;
+		}
+		
 	}
 	
 	/**
@@ -297,7 +363,9 @@ class Field
 			case 'dbSelect':
 			case 'select':
 				$source = $this->getOptions();
-				$value = $source[$value];
+				if($value){
+					$value = $source[$value];
+				}
 				break;
 				
 			// File

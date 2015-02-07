@@ -4,7 +4,9 @@
 namespace Abm\View\Helper;
 
 use Abm\Entity;
+use Abm\Entity\Field;
 use Abm\View;
+use Mvc\Db\Row;
 
 /** View Helper for creating automated Entity listings */
 class EntityList
@@ -34,10 +36,22 @@ class EntityList
 	protected $hide = array();
 	
 	/**
+	 * The list of items to show
+	 * @var Mvc\Db\Resultset
+	 */
+	public $list;
+	
+	/**
 	 * HTML Template for displaying page info
 	 * @var string
 	 */
 	public $pageInfoTemplate = '<div class="page-info">Showing results {start} to {end} of {total}</div>';
+	
+	/**
+	 * Filters for the search query
+	 * @var array
+	 */
+	public $filters = array();
 	
 	/**
 	 * Receives the injected View and Entity objects and options
@@ -51,6 +65,8 @@ class EntityList
 		$this->entity = $entity;
 		$this->options = $options;
 		if(isset($options['hide'])) $this->hide = $options['hide'];
+		if(isset($options['list'])) $this->list = $options['list'];
+		if(isset($options['filters'])) $this->setFilters($options['filters']);
 	}
 	
 	/**
@@ -63,20 +79,33 @@ class EntityList
 		$entity = $this->entity;
 		$options = $this->options;
 		$out = array();
-		$list = $entity->fetchOptions($this->options);
+		if(!$this->list){
+			$where = 1;
+			$bind = array();
+			if($this->filters){
+				foreach($this->filters as $wherePart => $bindPart){
+					$whereArray[] = "($wherePart)";
+					if($bindPart){
+						$bind = array_merge($bind, (array) $bindPart);
+					}
+				}
+				$where = implode(' AND ', $whereArray);
+			}
+			$this->list = $entity->fetchOptions($this->options, $where, $bind);
+		}
 		$actions = isset($options['actions']) ? $options['actions'] : $entity->getActions();
 		// Remove add action
 		if(in_array('add', $actions)){
 			unset($actions[array_search('add', $actions)]);
 		}
-		if($list && count($list)){
+		if($this->list && count($this->list)){
 			$out[] = $this->renderPageInfo();
 			$out[] = "<table class=\"$view->listClass\">
 			{$this->entityListHeader($entity, $actions, $options)}
-			{$this->entityListBody($entity, $list, $actions, $options)}
+			{$this->entityListBody($entity, $actions, $options)}
 			</table>";
 		}else{
-			$out[] = '<p>'.sprintf($view->__('No %s found', $view::TEXTDOMAIN), $entity->getPlural()).'</p>';
+			$out[] = '<p>'.$view->__(sprintf($view->__('No %s found', $view::TEXTDOMAIN), $view->__($entity->getPlural()))).'</p>';
 		}
 		if($messages = $entity->getMessages()){
 			array_unshift($out, $view->renderMessages($messages));
@@ -117,6 +146,17 @@ class EntityList
 	}
 	
 	/**
+	 * Set filters for the search query
+	 * @param array $filters
+	 * @return \Abm\View\Helper\EntityList
+	 */
+	public function setFilters(array $filters)
+	{
+		$this->filters = $filters;
+		return $this;
+	}
+	
+	/**
 	 * Generate output for the list header
 	 * @param Entity $entity
 	 * @param array $actions
@@ -129,7 +169,7 @@ class EntityList
 		<tr>";
 		foreach($entity->getFields() as $field){
 			if(!in_array($field->getName(), $this->hide)){
-				$out[] = '<th>'.$field->getTitle().'</th>';
+				$out[] = $this->headerCell($field);
 			}
 		}
 		if(!empty($actions)){
@@ -140,25 +180,34 @@ class EntityList
 		</thead>";
 		return implode(PHP_EOL, $out);
 	}
+	
+	/**
+	 * Render a table header cell with a field title
+	 * @param Field $field
+	 * @return string
+	 */
+	public function headerCell(Field $field)
+	{
+		return '<th>'.$this->view->__($field->getTitle()).'</th>';
+	}
 
 	/**
 	 * Generate output for the list body
 	 * @param Entity $entity
-	 * @param Mvc\Db\Resultset $list
 	 * @param array $actions
 	 * @param array $options
 	 * @return string
 	 */
-	protected function entityListBody(Entity $entity, $list, $actions, $options)
+	protected function entityListBody(Entity $entity, $actions, $options)
 	{
 		$view = $this->view;
 		$out[] = '<tbody>';
-		foreach($list as $row){
+		foreach($this->list as $row){
 			$out[] = '<tr>';
 			foreach($entity->getFields() as $field){
 				if(!in_array($field->getName(), $this->hide)){
 					$value = $row->{$field->getName()};
-					$out[] = "<td>{$field->render($row)}</td>";
+					$out[] = $this->bodyCell($field, $row);
 				}
 			}
 			if(!empty($actions)){
@@ -169,7 +218,7 @@ class EntityList
 					$out[] = "<td><a href=\"?$param=$id\">
 					<span class=\"action $action\" title=\"".$view->__(ucfirst($action), $view::TEXTDOMAIN)."\">
 						<span class=\"fa fa-{$this->getIcon($action)} fa-lg\"></span>
-						<span class=\"text\">".$view->__(ucfirst($action), $view::TEXTDOMAIN)."</span>
+						<span class=\"text\">".$this->getActionName($action, $row)."</span>
 					</span>
 					</a></td>";
 				}
@@ -178,6 +227,29 @@ class EntityList
 		}
 		$out[] = '</tbody>';
 		return implode(PHP_EOL, $out);
+	}
+	
+	/**
+	 * Render a table body cell with a field value
+	 * @param Field $field
+	 * @param Row $row
+	 * @return string
+	 */
+	public function bodyCell(Field $field, Row $row)
+	{
+		return "<td>{$field->render($row)}</td>";
+	}
+	
+	/**
+	 * Get the text for an action button
+	 * @param string $action
+	 * @param Mvc\Db\Row $row
+	 * @return string
+	 */
+	public function getActionName($action, $row)
+	{
+		$view = $this->view;
+		return $view->__(ucfirst($action), $view::TEXTDOMAIN);
 	}
 	
 	/**

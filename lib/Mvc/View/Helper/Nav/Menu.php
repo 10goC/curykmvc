@@ -161,9 +161,9 @@ class Menu
 			echo $link->getAnchor();
 			// render sublevels recursively
 			if($link->linkCount){
-				echo '<![if gt IE 6]></a><![endif]><!--[if lte IE 6]><table><tr><td><![endif]--><ul>';
+				echo ' <span class="caret"></span><ul class="dropdown-menu" role="menu">';
 				$link->_renderLinks();
-				echo '</ul><!--[if lte IE 6]></td></tr></table></a><![endif]-->';
+				echo '</ul>';
 			}else echo '</a>';
 			echo '</li>';
 		}

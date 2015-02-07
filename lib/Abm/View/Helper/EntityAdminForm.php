@@ -5,6 +5,7 @@ namespace Abm\View\Helper;
 
 use Abm\Entity;
 use Abm\View;
+use Mvc\Db\Row;
 
 /** Entity admin form view helper */
 class EntityAdminForm
@@ -112,7 +113,7 @@ class EntityAdminForm
 	{
 		if($this->legend){
 			$view = $this->view;
-			$legend = is_string($this->legend) ? $this->legend : $this->view->__(ucwords($action), $view::TEXTDOMAIN).' '.$this->entity->getName();
+			$legend = is_string($this->legend) ? $this->legend : $view->__($view->__(ucwords($action), $view::TEXTDOMAIN).' '.$view->__($this->entity->getName()));
 			return "<legend>$legend</legend>";
 		}
 		return '';
@@ -126,120 +127,167 @@ class EntityAdminForm
 	 */
 	public function innerForm($action, $entityIndex)
 	{
-		$entity = $this->entity;
-		$view = $this->view;
+		$entity   = $this->entity;
+		$view     = $this->view;
 		$formName = "{$action}_{$entity->getCleanName()}[$entityIndex]";
-		$formId = "{$action}_{$entity->getCleanName()}_$entityIndex";
+		$formId   = "{$action}_{$entity->getCleanName()}_$entityIndex";
 		
 		$out[] = '<fieldset>
 			'.$this->getLegend($action);
 		foreach($entity->getFields() as $field){
-			$fieldName = "{$formName}[{$field->getName()}]";
-			$fieldId   = "{$formId}_{$field->getName()}";
-			$fieldType = $field->getType();
-			$defaultValue = $field->defaultValue;
-			if($action == 'edit' && isset($this->records[$entityIndex])){
-				$defaultValue = $this->records[$entityIndex]->{$field->getName()};
-			}
-			$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
-			$out[] = "<div class=\"form-group $fieldType {$entity->getCleanName()}-{$field->getName()}-form-group\">
-			<label class=\"control-label\" for=\"$fieldId\"><span class=\"label-text\">{$field->getTitle()}</span>";
-			$required = $field->required ? 'required="required"' : '';
-			$class =  $entity->getCleanName().'-'.$field->getName();
-			switch ($fieldType) {
-				case 'date':
-					$date   = preg_match('/([0-9]{4})-([0-9]{2})-([0-9]{2})/', $value, $datePart);
-					$day    = $date ? $datePart[3] : '';
-					$month  = $date ? $datePart[2] : '';
-					$year   = $date ? $datePart[1] : '';
-					$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
-					$fields['D'] = "<select class=\"form-control\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
-						<option value=\"\">{$this->view->__('Day')}</option>";
-						for($d = 1; $d <= 31; $d++){
-							$selected = $day == $d ? 'selected="selected"' : '';
-							$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
-						}
-					$fields['D'] .= "</select>";
-					$fields['M'] = "<select class=\"form-control\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
-						<option value=\"\">{$this->view->__('Month')}</option>";
-						foreach($months as $m => $monthName){
-							$mm = $m +1;
-							$selected = $month == $mm ? 'selected="selected"' : '';
-							$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName)}</option>";
-						}
-					$fields['M'] .= "</select>";
-					$fields['Y'] = "<input placeholder=\"{$this->view->__('year')}\" class=\"form-control\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
-					foreach(str_split($field->dateFieldsOrder) as $i){
-						$out[] = $fields[$i];
-					}
-					break;
-				case 'textarea':
-					$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
-					$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
-					break;
-				case 'select':
-				case 'dbSelect':
-					$out[] = "<select class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $required>";
-					if($field->emptyFirstOption !== false){
-						$out[] = "<option value=\"\">$field->emptyFirstOption</option>";
-					}
-					$options = $field->getOptions();
-					foreach($options as $opVal => $option){
-						$selected = $opVal == $value ? 'selected="selected"' : '';
-						$out[] = "<option value=\"$opVal\" $selected>$option</option>";
-					}
-					$out[] = "</select>";
-					break;
-				case 'boolean':
-					$checked = $value ? 'checked="checked"' : '';
-					$out[] = "<input type=\"hidden\" name=\"$fieldName\" value=\"0\" />
-					<input type=\"checkbox\" name=\"$fieldName\" id=\"$fieldId\" value=\"1\" $checked />";
-					break;
-				case 'checkbox':
-					$options = $field->getOptions();
-					foreach($options as $opVal => $option){
-						$optionName = "{$fieldName}[$opVal]";
-						$optionId = "{$fieldId}_$opVal";
-						$checked = isset($value[$opVal]) && $value[$opVal] ? 'checked="checked"' : '';
-						$out[] = "<div class=\"checkbox\">
-						<label for=\"$optionId\">
-						<input type=\"hidden\" name=\"$optionName\" value=\"0\" />
-						<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"1\" $checked />
-						<span>$option</span>
-						</label>
-						</div>";
-					}
-					break;
-				case 'dbCheckbox':
-					$options = $field->getOptions();
-					foreach($options as $opVal => $option){
-						$optionName = "{$fieldName}[]";
-						$optionId = "{$fieldId}_$opVal";
-						$values = explode(',', $value);
-						$checked = $value && in_array($opVal, $values) ? 'checked="checked"' : '';
-						$out[] = "<div class=\"checkbox\">
-						<label for=\"$optionId\">
-						<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"$opVal\" $checked />
-						<span>$option</span>
-						</label>
-						</div>";
-					}
-					break;
-				default:
-					if($value){
-						$value = "value=\"$value\"";
-					}
-					if($fieldType == 'image'){
-						$fieldType = 'file';
-					}
-					$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
-					$out[] = "<input class=\"form-control $class\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value $placeholder $required />";
-					break;
-			}
-			$out[] = '</label>
-			</div>';
+			$out[] = $this->renderInputField($field, $action, $entityIndex);
 		}
 		$out[] = '</fieldset>';
+		return implode(PHP_EOL, $out);
+	}
+	
+	public function renderInputField($field, $action, $entityIndex, $ref = null)
+	{
+		$entity       = $this->entity;
+		$view         = $this->view;
+		$formName     = "{$action}_{$entity->getCleanName()}[$entityIndex]";
+		$formId       = "{$action}_{$entity->getCleanName()}_$entityIndex";
+		$fieldName    = "{$formName}[{$field->getName()}]";
+		$fieldId      = "{$formId}_{$field->getName()}";
+		$fieldType    = $field->getType();
+		$defaultValue = $field->defaultValue;
+		if($action == 'edit' && isset($this->records[$entityIndex])){
+			$defaultValue = $this->records[$entityIndex]->{$field->getName()};
+		}
+		$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
+		if(is_array($value) && $ref){
+			$value = isset($value[$ref]) ? $value[$ref] : null;
+		}
+		if($ref){
+			$fieldName .= "[$ref]";
+			$fieldId   .= "_$ref";
+		}
+		$out[] = "<div class=\"form-group $fieldType {$entity->getCleanName()}-{$field->getName()}-form-group\">
+		<label class=\"control-label\" for=\"$fieldId\"><span class=\"label-text\">{$this->view->__($field->getTitle())}</span>";
+		$required = $field->required ? 'required="required"' : '';
+		$class =  $entity->getCleanName().'-'.$field->getName();
+		switch ($fieldType) {
+			case 'date':
+			case 'time':
+			case 'datetime':
+				preg_match('/(?:([0-9]{4})-([0-9]{2})-([0-9]{2}) ?)?(?:([0-9]{2}):([0-9]{2}):([0-9]{2}))?/', $value, $datePart);
+				$isDate = strpos($fieldType, 'date') !== false;
+				$isTime = strpos($fieldType, 'time') !== false;
+				$date   = count($datePart) > 1;
+				$day    = $date ? $datePart[3] : '';
+				$month  = $date ? $datePart[2] : '';
+				$year   = $date ? $datePart[1] : '';
+				$hour   = $date ? $datePart[4] : '';
+				$minute = $date ? $datePart[5] : '';
+				$second = $date ? $datePart[6] : '';
+				$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+				$fields['D'] = "<select class=\"form-control day\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
+				<option value=\"\">{$this->view->__('Day')}</option>";
+				for($d = 1; $d <= 31; $d++){
+				$selected = $day == $d ? 'selected="selected"' : '';
+					$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
+				}
+				$fields['D'] .= "</select>";
+				$fields['M'] = "<select class=\"form-control month\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
+				<option value=\"\">{$this->view->__('Month')}</option>";
+				foreach($months as $m => $monthName){
+					$mm = $m +1;
+					$selected = $month == $mm ? 'selected="selected"' : '';
+					$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName)}</option>";
+				}
+				$fields['M'] .= "</select>";
+				$fields['Y'] = "<input placeholder=\"{$this->view->__('year')}\" class=\"form-control year\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
+				$fields['h'] = "<input placeholder=\"{$this->view->__('hour')}\" class=\"form-control hour\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
+				$fields['m'] = "<input placeholder=\"{$this->view->__('minute')}\" class=\"form-control minute\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
+				$fields['s'] = "<input placeholder=\"{$this->view->__('second')}\" class=\"form-control second\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
+				if($isDate){
+					$out[] = '<div class="date-fields">';
+					foreach(str_split(strtoupper($field->dateFieldsOrder)) as $dateField => $i){
+						if($dateField){
+							$out[] = '<span class="separator"></span>';
+						}
+						$out[] = $fields[$i];
+					}
+					$out[] = '</div>';
+				}
+				if($isTime){
+					$out[] = '<div class="time-fields">';
+					foreach(str_split(strtolower($field->timeFields)) as $timeField => $i){
+						if($timeField){
+							$out[] = '<span class="separator"></span>';
+						}
+						$out[] = $fields[$i];
+					}
+					$out[] = '</div>';
+				}
+				break;
+			case 'textarea':
+				$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
+				$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
+				break;
+				case 'select':
+				case 'dbSelect':
+				$out[] = "<select class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $required>";
+				if($field->emptyFirstOption !== false){
+					$out[] = '<option value="">'.$this->view->__($field->emptyFirstOption).'</option>';
+				}
+				$options = $field->getOptions();
+				foreach($options as $opVal => $option){
+					$selected = $opVal == $value ? 'selected="selected"' : '';
+					$out[] = "<option value=\"$opVal\" $selected>".$this->view->__($option)."</option>";
+				}
+				$out[] = "</select>";
+				break;
+			case 'boolean':
+				$checked = $value ? 'checked="checked"' : '';
+				$out[] = "<input type=\"hidden\" name=\"$fieldName\" value=\"0\" />
+				<input type=\"checkbox\" name=\"$fieldName\" id=\"$fieldId\" value=\"1\" $checked />";
+				break;
+				case 'checkbox':
+				$options = $field->getOptions();
+				foreach($options as $opVal => $option){
+					$optionName = "{$fieldName}[$opVal]";
+					$optionId = "{$fieldId}_$opVal";
+					$checked = isset($value[$opVal]) && $value[$opVal] ? 'checked="checked"' : '';
+					$out[] = "<div class=\"checkbox\">
+						<label for=\"$optionId\">
+							<input type=\"hidden\" name=\"$optionName\" value=\"0\" />
+							<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"1\" $checked />
+							<span>$option</span>
+						</label>
+					</div>";
+				}
+				break;
+			case 'dbCheckbox':
+				$options = $field->getOptions();
+				$out[] = "<div class=\"checkbox-options\">";
+				foreach($options as $opVal => $option){
+					$optionName = "{$fieldName}[]";
+					$optionId = "{$fieldId}_$opVal";
+					$values = explode(',', $value);
+					$checked = $value && in_array($opVal, $values) ? 'checked="checked"' : '';
+					$out[] = "<div class=\"checkbox\">
+						<label for=\"$optionId\">
+							<input type=\"checkbox\" name=\"$optionName\" id=\"$optionId\" value=\"$opVal\" $checked />
+							<span>$option</span>
+						</label>
+					</div>";
+				}
+				$out[] = "</div>";
+				break;
+			default:
+				if($value){
+					$value = "value=\"$value\"";
+				}
+				if($fieldType == 'image'){
+					$fieldType = 'file';
+				}
+				$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
+				$out[] = "<input class=\"form-control $class\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value $placeholder $required />";
+				break;
+		}
+		$out[] = '</label>
+		</div>';
 		return implode(PHP_EOL, $out);
 	}
 	
@@ -254,13 +302,15 @@ class EntityAdminForm
 		$entity = $this->entity;
 		$out = '';
 		if(isset($this->records[$entityIndex])){
+			$recordName = $this->records[$entityIndex]->{$entity->firstField()};
+			if(is_array($recordName)) $recordName = current($recordName);
 			$out = '<div class="bg-warning has-warning">
 				<div class="checkbox">
 					<label for="delete_'.$entity->getCleanName().'_'.$entityIndex.'">
 						<input type="hidden" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" value="0">
 						<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" id="delete_'.$entity->getCleanName().'_'.$entityIndex.'" value="1">
 						<span class="fa fa-warning"></span>
-						<span>'.sprintf($view->__('Confirm deletion of %s?', $view::TEXTDOMAIN), $this->records[$entityIndex]->{$entity->firstField()}).'</span>
+						<span>'.sprintf($view->__('Confirm deletion of %s?', $view::TEXTDOMAIN), $recordName).'</span>
 					</label>
 				</div>
 			</div>';
@@ -289,20 +339,30 @@ class EntityAdminForm
 			$forms['edit'] = explode(',', $edit);
 			$resultset = $entity->fetchIds($forms['edit']);
 			foreach($resultset as $row){
-				$this->records[$row->{$entity->getPrimaryKey()}] = $row;
+				$this->addRecord($row->{$entity->getPrimaryKey()}, $row);
 			}
 		}
 		if($delete && preg_match('/^[0-9]+(,[0-9]+)*$/', $delete)){
 			$forms['delete'] = explode(',', $delete);
 			$resultset = $entity->fetchIds($forms['delete']);
 			foreach($resultset as $row){
-				$this->records[$row->{$entity->getPrimaryKey()}] = $row;
+				$this->addRecord($row->{$entity->getPrimaryKey()}, $row);
 			}
 		}
 		if(empty($forms) && empty($forms['delete'])){
 			$forms['add'][] = 0;
 		}
 		return $forms;
+	}
+	
+	/**
+	 * Add DB record to the fetched records array
+	 * @param int $id
+	 * @param Row $row
+	 */
+	public function addRecord($id, Row $row)
+	{
+		$this->records[$id] = $row;
 	}
 	
 	/**
