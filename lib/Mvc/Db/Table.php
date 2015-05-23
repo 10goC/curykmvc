@@ -125,8 +125,8 @@ class Table
 		$keys = array_keys($values);
 		array_walk($keys, array($this, 'filterColumnName'));
 		$placeholders = $this->getPlaceholders($keys);
-		$columns = '`' . implode('`, `', $keys) . '`';
-		$query = "INSERT INTO $this->table ($columns) VALUES ($placeholders)";
+		$columns = $keys ? '`' . implode('`, `', $keys) . '`' : '';
+		$query = "INSERT INTO `$this->table` ($columns) VALUES ($placeholders)";
 		$result = $this->getDb()->query($query, $values);
 		if($result){
 			return $this->getDb()->insertedId();
@@ -138,17 +138,25 @@ class Table
 	 * Update a record in the database.
 	 * @param string|array $key The primary key column name
 	 * @param string|array $id The primary key value
-	 * @param array $values An array of key / value 
+	 * @param string|array $values An array of key / value 
 	 * pairs representing column names and values
 	 * @return int|NULL The number of affected rows or null on failure.
 	 */
 	public function update($key, $id, $values)
 	{
-		$keys = array_keys($values);
-		foreach($values as $column => $value){
-			$set[] = "`$column` = ?";
+		if(is_string($values)){
+			$placeholders = $values;
+		}else{
+			foreach($values as $column => $value){
+				if($value === null){
+					$set[] = "`$column` = NULL";
+					unset($values[$column]);
+				}else{
+					$set[] = "`$column` = ?";
+				}
+			}
+			$placeholders = implode(', ', $set);
 		}
-		$placeholders = implode(', ', $set);
 		foreach((array) $key as $k){
 			$where[] = "`$k` = ?";
 		}

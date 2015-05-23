@@ -161,10 +161,12 @@ class Menu
 			echo $link->getAnchor();
 			// render sublevels recursively
 			if($link->linkCount){
-				echo ' <span class="caret"></span><ul class="dropdown-menu" role="menu">';
+				echo ' <span class="caret"></span><ul class="dropdown-menu" role="menu"></a>';
 				$link->_renderLinks();
 				echo '</ul>';
-			}else echo '</a>';
+			}else{
+				echo '</a>';
+			}
 			echo '</li>';
 		}
 	}

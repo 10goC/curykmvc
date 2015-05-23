@@ -151,7 +151,7 @@ class Link extends Menu
 	public function cleanUrl($url)
 	{
 		return strtolower(preg_replace(array(
-			'/[^a-z0-9 -_]/i',
+			'/[^a-z0-9 \-_]/i',
 			'/ +/'
 		), array(
 			'',

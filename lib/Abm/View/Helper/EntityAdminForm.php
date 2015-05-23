@@ -177,29 +177,29 @@ class EntityAdminForm
 				$day    = $date ? $datePart[3] : '';
 				$month  = $date ? $datePart[2] : '';
 				$year   = $date ? $datePart[1] : '';
-				$hour   = $date ? $datePart[4] : '';
-				$minute = $date ? $datePart[5] : '';
-				$second = $date ? $datePart[6] : '';
+				$hour   = $date && $isTime ? $datePart[4] : '';
+				$minute = $date && $isTime ? $datePart[5] : '';
+				$second = $date && $isTime ? $datePart[6] : '';
 				$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
 				$fields['D'] = "<select class=\"form-control day\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
-				<option value=\"\">{$this->view->__('Day')}</option>";
+				<option value=\"\">{$this->view->__('Day', $view::TEXTDOMAIN)}</option>";
 				for($d = 1; $d <= 31; $d++){
 				$selected = $day == $d ? 'selected="selected"' : '';
 					$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
 				}
 				$fields['D'] .= "</select>";
 				$fields['M'] = "<select class=\"form-control month\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
-				<option value=\"\">{$this->view->__('Month')}</option>";
+				<option value=\"\">{$this->view->__('Month', $view::TEXTDOMAIN)}</option>";
 				foreach($months as $m => $monthName){
 					$mm = $m +1;
 					$selected = $month == $mm ? 'selected="selected"' : '';
-					$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName)}</option>";
+					$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName, $view::TEXTDOMAIN)}</option>";
 				}
 				$fields['M'] .= "</select>";
-				$fields['Y'] = "<input placeholder=\"{$this->view->__('year')}\" class=\"form-control year\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
-				$fields['h'] = "<input placeholder=\"{$this->view->__('hour')}\" class=\"form-control hour\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
-				$fields['m'] = "<input placeholder=\"{$this->view->__('minute')}\" class=\"form-control minute\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
-				$fields['s'] = "<input placeholder=\"{$this->view->__('second')}\" class=\"form-control second\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
+				$fields['Y'] = "<input placeholder=\"{$this->view->__('Year', $view::TEXTDOMAIN)}\" class=\"form-control year\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
+				$fields['h'] = "<input placeholder=\"{$this->view->__('Hour', $view::TEXTDOMAIN)}\" class=\"form-control hour\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
+				$fields['m'] = "<input placeholder=\"{$this->view->__('Minute', $view::TEXTDOMAIN)}\" class=\"form-control minute\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
+				$fields['s'] = "<input placeholder=\"{$this->view->__('Second', $view::TEXTDOMAIN)}\" class=\"form-control second\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
 				if($isDate){
 					$out[] = '<div class="date-fields">';
 					foreach(str_split(strtoupper($field->dateFieldsOrder)) as $dateField => $i){

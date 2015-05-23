@@ -139,7 +139,7 @@ class View
 	 * @param string $url
 	 * @return string
 	 */
-	public function serverUrl($url)
+	public function serverUrl($url = '/')
 	{
 		$protocol = preg_match('/https/i', $_SERVER['SERVER_PROTOCOL']) ? 'https' : 'http';
 		return $protocol . '://' . $_SERVER['SERVER_NAME'] . $this->baseUrl($url);
@@ -150,7 +150,7 @@ class View
 	 * @param string $url
 	 * @return string
 	 */
-	public function baseUrl($url)
+	public function baseUrl($url = '/')
 	{
 		try {
 			$basepath = $this->controller->getApplication()->getConfig()->basepath;
@@ -206,10 +206,47 @@ class View
 			$out[] = "<$this->messagesOuterTag class=\"$this->messagesOuterClass $type\">
 			<$this->messagesInnerTag class=\"$this->messagesInnerClass\">".
 			implode("</$this->messagesInnerTag>
-					<$this->messagesInnerTag>", $message).
+					<$this->messagesInnerTag>", array_map(array($this, '__'), $message)).
 					"</$this->messagesInnerTag></$this->messagesOuterTag>";
 		}
 		return implode(PHP_EOL, $out);
+	}
+	
+	/**
+	 * Render a view inside another view.
+	 * @param string $partial
+	 * @param string $layout
+	 * @return string
+	 */
+	public function partial($partial, $layout = false)
+	{
+		$out = '';
+		$filename = APPLICATION_PATH . '/view/' . $partial . '.phtml';
+		if(is_file($filename)){
+			ob_start();
+			include $filename;
+			if($layout){
+				$layoutFilename = APPLICATION_PATH . '/view/layout/' . $layout . '.phtml';
+				if(is_file($layoutFilename)){
+					$this->content = ob_get_clean();
+					ob_start();
+					include $layoutFilename;
+				}
+			}
+			return ob_get_clean();
+		}
+		return $out;
+	}
+	
+	/**
+	 * Translate a string
+	 * @param string $str
+	 * @param string $textDomain
+	 * @return string
+	 */
+	public function __($str, $textDomain = Application::TEXTDOMAIN)
+	{
+		return $this->getController()->getTranslator()->translate($str, $textDomain);
 	}
 	
 }

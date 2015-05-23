@@ -326,6 +326,7 @@ class Entity
 		if(isset($this->fieldObjects[$field])){
 			unset($this->fieldObjects[$field]);
 		}
+		return $this;
 	}
 	
 	/**
@@ -770,7 +771,15 @@ class Entity
 			$key = $this->primaryKey;
 		}
 		$placeholders = array_fill(0, count((array) $ids), '?');
-		return $this->fetch("`$this->tableName`.`$key` IN( ".implode(', ', $placeholders)." )", (array) $ids);
+		if(is_array($key)){
+			foreach($key as $k){
+				$columnNames[] = "`$this->tableName`.`$k`";
+			}
+			$columns = "CONCAT_WS(',', ".implode(',', $columnNames).")";
+		}else{
+			$columns = "`$this->tableName`.`$key`";
+		}
+		return $this->fetch("$columns IN( ".implode(', ', $placeholders)." )", (array) $ids);
 	}
 	
 	/**
@@ -844,8 +853,9 @@ class Entity
 	{
 		if($this->callbacks){
 			foreach($this->callbacks as $callback){
-				$target = $callback['field']->getTarget();
-				$target->insertRelated($callback['values'], $insertId);
+				if($target = $callback['field']->getTarget()){
+					$target->insertRelated($callback['values'], $insertId);
+				}
 			}
 		}
 	}
@@ -862,23 +872,25 @@ class Entity
 		$table = $this->getTable();
 		if(!$table) return null;
 		$recategorize = false;
-		if($this->isOrdered() && $this->isCategorized() && isset($values[$catField])){
+		if($this->isOrdered() && $this->isCategorized()){
 			// Category may have changed
 			$catField = $this->categorized['field'];
 			$ordField = $this->ordered['field'];
-			$result = $this->fetchIds($id);
-			if($result){
-				$row = current($result);
-				$rowOrder = $row->$ordField;
-				$recategorize = $values[$catField] != $row->$catField;
-				if($recategorize){
-					// Category has changed
-					if($this->defaultOrder() == self::ORDER_LAST){
-						// Move last
-						$values[$ordField] = $this->getNextOrderValue($values[$catField]);
-					}else{
-						// Move first
-						$values[$ordField] = 1;
+			if(isset($values[$catField])){
+				$result = $this->fetchIds($id);
+				if($result){
+					$row = current($result);
+					$rowOrder = $row->$ordField;
+					$recategorize = $values[$catField] != $row->$catField;
+					if($recategorize){
+						// Category has changed
+						if($this->defaultOrder() == self::ORDER_LAST){
+							// Move last
+							$values[$ordField] = $this->getNextOrderValue($values[$catField]);
+						}else{
+							// Move first
+							$values[$ordField] = 1;
+						}
 					}
 				}
 			}
@@ -956,7 +968,7 @@ class Entity
 	 * Defaults to the primary key name.
 	 * @return int|NULL The number of affected rows or null on failure.
 	 */
-	public function delete(array $values, $key = null)
+	public function delete($values, $key = null)
 	{
 		$table = $this->getTable();
 		if(!$table) return null;

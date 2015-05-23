@@ -119,7 +119,7 @@ class Application
 			$this->controller->getView()->exception = $e;
 			
 			// Render view
-			ob_clean();
+			@ob_clean();
 			$this->controller->renderView();
 		}
 	}

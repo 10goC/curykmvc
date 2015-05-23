@@ -62,15 +62,4 @@ class View extends MvcView
 		return $helper;
 	}
 	
-	/**
-	 * Translate a string
-	 * @param string $str
-	 * @param string $textDomain
-	 * @return string
-	 */
-	public function __($str, $textDomain = Application::TEXTDOMAIN)
-	{
-		return $this->getController()->getTranslator()->translate($str, $textDomain);
-	}
-	
 }

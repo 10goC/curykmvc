@@ -7,7 +7,7 @@ class IndexController extends Controller
 {
 	public function indexAction()
 	{
-		$lang = '/es_ES';
+		$lang = $this->getParam('lang', '');
 		$chapters = array();
 		$docs = array(
 			'start',
@@ -16,11 +16,11 @@ class IndexController extends Controller
 			// 'abm'
 		);
 		$titles = array(
-			'/es_ES' => 'Documentación',
-			''       => 'Documentation',
+			'es_ES' => 'Documentación',
+			''      => 'Documentation',
 		);
 		foreach($docs as $chNum => $doc){
-			$chapter = file_get_contents(APPLICATION_PATH . "/view/docs$lang/$doc.phtml");
+			$chapter = file_get_contents(str_replace('//', '/', APPLICATION_PATH . "/view/docs/$lang/$doc.phtml"));
 			$chapter = str_replace('{{chapter}}', $chNum +1, $chapter);
 			$chapters[] = $chapter;
 		}

@@ -3,6 +3,8 @@
 
 namespace Mvc;
 
+use Abm\View as AbmView;
+
 /** The controller class. Where all apllication actions live. All controllers should extend this class. */
 class Controller
 {
@@ -49,7 +51,19 @@ class Controller
 	protected $messages = array();
 	
 	/**
-	 * Store application injected object and initialize view.
+	 * The current language
+	 * @var string
+	 */
+	protected $lang = 'en_US';
+	
+	/**
+	 * The Translator object
+	 * @var Mvc\Translator
+	 */
+	protected $translator;
+	
+	/**
+	 * Store application injected object, initialize view and create a translator instance.
 	 * @param Mvc\Application $application the application gets automatically injected into the controller
 	 */
 	public function __construct(Application $application)
@@ -57,6 +71,7 @@ class Controller
 		$viewClass = $this->viewClass;
 		$this->application = $application;
 		$this->view = new $viewClass($this);
+		$this->translator = new Translator($this);
 		
 		$session = &$this->getSession(self::FLASH_MESSAGES);
 		foreach($session as $type => $messages){
@@ -197,6 +212,10 @@ class Controller
 				$this->setLayout(null);
 				header('Content-type: application/json');
 				break;
+			case 'xml':
+				$this->setLayout(null);
+				header('Content-type: text/xml; charset=utf-8');
+				break;
 			case 'attachment':
 				$filename = $options ? $options : 'download';
 				header('Content-type: application/octet-stream');
@@ -235,6 +254,36 @@ class Controller
 	{
 		$session = &$this->getSession(self::FLASH_MESSAGES);
 		$session[$type][] = $message;
+	}
+	
+	/**
+	 * Set language and load Abm and Application text domains.
+	 * @param string $lang
+	 */
+	public function setLang($lang)
+	{
+		$this->lang = $lang;
+		$this->translator->setLang($lang);
+		$this->translator->loadTextDomain(AbmView::TEXTDOMAIN);
+		$this->translator->loadTextDomain(Application::TEXTDOMAIN);
+	}
+	
+	/**
+	 * Get current language.
+	 * @return string
+	 */
+	public function getLang()
+	{
+		return $this->lang;
+	}
+	
+	/**
+	 * Get the translator object.
+	 * @return Mvc\Translator
+	 */
+	public function getTranslator()
+	{
+		return $this->translator;
 	}
 	
 	/**

@@ -4,14 +4,24 @@ return array(
 		'Mvc',
 		'Abm'
 	),
-	'db' => array(
-		'host' => '',
-		'user' => '',
-		'pass' => '',
-		'name' => '',
-	),
 	'site' => array(
 		'title' => 'Site Title',
 		'description' => 'Site Description',
+	),
+	'notifications' => array(
+		'smtp' => array(
+			'ssl' => '',
+			'port' => '',
+			'auth' => '',
+			'host' => '',
+			'username' => '',
+			'password' => '',
+		),
+		'mail' => array(
+			'defaultFrom'     => '',
+			'defaultFromName' => '',
+			'defaultTo'       => '',
+			'defaultSubject'  => '',
+		),
 	),
 );
