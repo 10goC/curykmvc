@@ -198,7 +198,6 @@ class Table
 			$query = "DELETE FROM $this->table WHERE $key IN( $placeholders )";
 			$bind = $ids;
 		}
-		
 		$result = $this->getDb()->query($query, $bind);
 		if($result){
 			return $this->getDb()->affectedRows();

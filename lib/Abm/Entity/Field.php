@@ -364,7 +364,16 @@ class Field
 			case 'select':
 				$source = $this->getOptions();
 				if($value){
-					$value = $source[$value];
+					if(isset($source[$value])){
+						$value = $source[$value];
+					}else{
+						// Search within optgroups
+						foreach($source as $option){
+							if(is_array($option) && isset($option[$value])){
+								$value = $option[$value];
+							}
+						}
+					}
 				}
 				break;
 				
@@ -381,7 +390,10 @@ class Field
 			// Boolean
 			case 'boolean':
 				$icons = array('times', 'check');
-				$values = array('Inactive', 'Active');
+				if(!$this->getOptions()){
+					$this->setOptions(array('Inactive', 'Active'));
+				}
+				$values = $this->getOptions();
 				// Translate using library text domain
 				$word = $this->getEntity()->__($values[$value]);
 				// Translate again using Application text domain

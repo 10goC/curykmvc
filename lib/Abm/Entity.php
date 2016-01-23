@@ -208,8 +208,11 @@ class Entity
 			}
 		}
 		if($this->table && !$this->table instanceof Table){
-			die($this->table);
-			throw new \Exception(sprintf('Incorrect table class '.get_class($this->table).' specified for entity %s', $this->name));
+			if(is_object($this->table)){
+				throw new \Exception(sprintf('Incorrect table class '.get_class($this->table).' specified for entity %s', $this->name));
+			}else{
+				throw new \Exception('Incorrect type for '.get_class($this) . '::$table. Expected: Mvc\Db\Table, found: ' . gettype($this->table));
+			}
 			$this->table = false;
 		}
 		return $this->table;
@@ -535,8 +538,8 @@ class Entity
 	{
 		foreach($this->performed as $action => $items){
 			$message = count($items) == 1 ?
-				$this->__(sprintf($this->__("%s $action successfully"), $this->getName()), Application::TEXTDOMAIN) :
-				sprintf($this->__('%d'.sprintf($this->__(" %s $action successfully"), $this->getPlural()), Application::TEXTDOMAIN), count($items))
+				$this->__(sprintf($this->__("%s $action successfully"), $this->__($this->getName(), Application::TEXTDOMAIN)), Application::TEXTDOMAIN) :
+				sprintf($this->__('%d'.sprintf($this->__(" %s $action successfully"), $this->__($this->getPlural(), Application::TEXTDOMAIN)), Application::TEXTDOMAIN), count($items))
 			;
 			$this->addFlashMessage(sprintf($this->__($message), count($items)), self::SUCCESS);
 		}

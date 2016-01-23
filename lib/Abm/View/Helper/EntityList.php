@@ -217,7 +217,7 @@ class EntityList
 					$id = $row->{$entity->getPrimaryKey()};
 					$out[] = "<td><a href=\"?$param=$id\">
 					<span class=\"action $action\" title=\"".$view->__(ucfirst($action), $view::TEXTDOMAIN)."\">
-						<span class=\"fa fa-{$this->getIcon($action)} fa-lg\"></span>
+						<span class=\"fa {$this->getIcon($action)} fa-lg\"></span>
 						<span class=\"text\">".$this->getActionName($action, $row)."</span>
 					</span>
 					</a></td>";
@@ -264,7 +264,7 @@ class EntityList
 			'delete' => 'trash',
 			'move up' => 'arrow-up',
 		);
-		return isset($icons[$action]) ? $icons[$action] : '';
+		return isset($icons[$action]) ? 'fa-'.$icons[$action] : 'icon';
 	}
 	
 	/**

@@ -181,14 +181,14 @@ class EntityAdminForm
 				$minute = $date && $isTime ? $datePart[5] : '';
 				$second = $date && $isTime ? $datePart[6] : '';
 				$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
-				$fields['D'] = "<select class=\"form-control day\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
+				$fields['D'] = "<select class=\"form-control day $class\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
 				<option value=\"\">{$this->view->__('Day', $view::TEXTDOMAIN)}</option>";
 				for($d = 1; $d <= 31; $d++){
 				$selected = $day == $d ? 'selected="selected"' : '';
 					$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
 				}
 				$fields['D'] .= "</select>";
-				$fields['M'] = "<select class=\"form-control month\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
+				$fields['M'] = "<select class=\"form-control month $class\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
 				<option value=\"\">{$this->view->__('Month', $view::TEXTDOMAIN)}</option>";
 				foreach($months as $m => $monthName){
 					$mm = $m +1;
@@ -196,10 +196,10 @@ class EntityAdminForm
 					$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName, $view::TEXTDOMAIN)}</option>";
 				}
 				$fields['M'] .= "</select>";
-				$fields['Y'] = "<input placeholder=\"{$this->view->__('Year', $view::TEXTDOMAIN)}\" class=\"form-control year\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
-				$fields['h'] = "<input placeholder=\"{$this->view->__('Hour', $view::TEXTDOMAIN)}\" class=\"form-control hour\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
-				$fields['m'] = "<input placeholder=\"{$this->view->__('Minute', $view::TEXTDOMAIN)}\" class=\"form-control minute\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
-				$fields['s'] = "<input placeholder=\"{$this->view->__('Second', $view::TEXTDOMAIN)}\" class=\"form-control second\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
+				$fields['Y'] = "<input placeholder=\"{$this->view->__('Year', $view::TEXTDOMAIN)}\" class=\"form-control year $class\" type=\"number\" name=\"{$fieldName}[y]\" id=\"{$fieldId}_y\" value=\"$year\" $required>";
+				$fields['h'] = "<input placeholder=\"{$this->view->__('Hour', $view::TEXTDOMAIN)}\" class=\"form-control hour $class\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
+				$fields['m'] = "<input placeholder=\"{$this->view->__('Minute', $view::TEXTDOMAIN)}\" class=\"form-control minute $class\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
+				$fields['s'] = "<input placeholder=\"{$this->view->__('Second', $view::TEXTDOMAIN)}\" class=\"form-control second $class\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
 				if($isDate){
 					$out[] = '<div class="date-fields">';
 					foreach(str_split(strtoupper($field->dateFieldsOrder)) as $dateField => $i){
@@ -223,7 +223,7 @@ class EntityAdminForm
 				break;
 			case 'textarea':
 				$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
-				$out[] = "<textarea class=\"form-control\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
+				$out[] = "<textarea class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
 				break;
 				case 'select':
 				case 'dbSelect':
@@ -233,8 +233,17 @@ class EntityAdminForm
 				}
 				$options = $field->getOptions();
 				foreach($options as $opVal => $option){
-					$selected = $opVal == $value ? 'selected="selected"' : '';
-					$out[] = "<option value=\"$opVal\" $selected>".$this->view->__($option)."</option>";
+					if(is_array($option)){
+						$out[] = '<optgroup label="'.$this->view->__($opVal).'">';
+						foreach($option as $v => $o){
+							$selected = $v == $value ? 'selected="selected"' : '';
+							$out[] = "<option value=\"$v\" $selected>".$this->view->__($o)."</option>";
+						}
+						$out[] = '</optgroup>';
+					}else{
+						$selected = $opVal == $value ? 'selected="selected"' : '';
+						$out[] = "<option value=\"$opVal\" $selected>".$this->view->__($option)."</option>";
+					}
 				}
 				$out[] = "</select>";
 				break;

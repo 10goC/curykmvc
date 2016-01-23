@@ -224,6 +224,7 @@ class View
 		$filename = APPLICATION_PATH . '/view/' . $partial . '.phtml';
 		if(is_file($filename)){
 			ob_start();
+			extract(get_object_vars($this));
 			include $filename;
 			if($layout){
 				$layoutFilename = APPLICATION_PATH . '/view/layout/' . $layout . '.phtml';
