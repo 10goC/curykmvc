@@ -45,7 +45,13 @@ class EntityList
 	 * HTML Template for displaying page info
 	 * @var string
 	 */
-	public $pageInfoTemplate = '<div class="page-info">Showing results {start} to {end} of {total}</div>';
+	public $pageInfoTemplate = '<div class="page-info">%s</div>';
+	
+	/**
+	 * Text content for the HTML Template that displays page info
+	 * @var string
+	 */
+	public $pageInfoTemplateStr = 'Showing results {start} to {end} of {total}';
 	
 	/**
 	 * Filters for the search query
@@ -128,7 +134,12 @@ class EntityList
 					$this->entity->getPaginator()->getPageLastItem(),
 					$this->entity->getPaginator()->getTotalItems()
 				),
-				$this->view->__($this->pageInfoTemplate)
+				sprintf(
+					$this->pageInfoTemplate,
+					$this->view->__(
+						$this->view->__($this->pageInfoTemplateStr, View::TEXTDOMAIN)
+					)
+				)
 			);
 		}
 		return '';

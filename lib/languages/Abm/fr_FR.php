@@ -50,4 +50,5 @@ return array(
 	"October" => "Octobre",
 	"November" => "Novembre",
 	"December" => "Décembre",
+	"Showing results {start} to {end} of {total}" => "Résultats {start} à {end} au {total}",
 );
