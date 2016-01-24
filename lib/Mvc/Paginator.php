@@ -73,6 +73,12 @@ class Paginator
 	public $wrapperTag = 'div';
 	
 	/**
+	 * The CSS clas for the wrapper element
+	 * @var string
+	 */
+	public $wrapperClass = 'page-numbers';
+	
+	/**
 	 * HTML Template to prepend to page number i.e.: <li>
 	 * @var string
 	 */
@@ -276,7 +282,7 @@ class Paginator
 	 */
 	public function renderPageNumbers()
 	{
-		$out[] = '<'.$this->wrapperTag.' class="page-numbers">';
+		$out[] = '<'.$this->wrapperTag.' class="'.$this->wrapperClass.'">';
 		$pagesBack = ceil(($this->showPages -1) /2);
 		$pagesAhead = floor(($this->showPages -1) /2);
 		$firstPage = $this->getCurrentPage() -$pagesBack;
@@ -285,7 +291,7 @@ class Paginator
 		if($firstPage > 2) $out[] = $this->beforePageNumber.'<span class="pages-inbetween">...</span>'.$this->afterPageNumber;
 		$lastPage = $this->getTotalPages();
 		if($lastPage > $this->getCurrentPage() +$pagesAhead) $lastPage = $this->getCurrentPage() +$pagesAhead;
-		if($lastPage < $this->showPages) $lastPage = $this->showPages;
+		if($lastPage < $this->showPages && $this->showPages <= $this->getTotalPages()) $lastPage = $this->showPages;
 		for($i = $firstPage; $i <= $lastPage; $i++){
 			if($i == $this->getCurrentPage()){
 				$out[] = "$this->beforePageNumber<span class=\"page-number disabled\">$i</span>$this->afterPageNumber";
