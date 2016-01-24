@@ -206,7 +206,7 @@ class View
 			$out[] = "<$this->messagesOuterTag class=\"$this->messagesOuterClass $type\">
 			<$this->messagesInnerTag class=\"$this->messagesInnerClass\">".
 			implode("</$this->messagesInnerTag>
-					<$this->messagesInnerTag>", array_map(array($this, '__'), $message)).
+					<$this->messagesInnerTag class=\"$this->messagesInnerClass\">", array_map(array($this, '__'), $message)).
 					"</$this->messagesInnerTag></$this->messagesOuterTag>";
 		}
 		return implode(PHP_EOL, $out);
