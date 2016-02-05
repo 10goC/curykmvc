@@ -70,6 +70,12 @@ class Menu
 	protected $brand = '';
 	
 	/**
+	 * HTML tag for the wrapper element
+	 * @var string
+	 */
+	protected $wrapperElement = 'nav';
+	
+	/**
 	 * Looks for the menu definition within navigation.xml by ID,
 	 * reads the configuration and initializes the navigation menu 
 	 * @param View $view
@@ -183,13 +189,24 @@ class Menu
 	}
 	
 	/**
+	 * Set the HTML tag for the wrapper element
+	 * @param string $tag
+	 * @return Mvc\View\Helper\Nav\Menu
+	 */
+	public function setWrapperElement($tag)
+	{
+		$this->wrapperElement = $tag;
+		return $this;
+	}
+	
+	/**
 	 * Generate output
 	 * @return string
 	 */
 	public function render()
 	{
 		ob_start();
-		echo '<nav '.$this->attributes.'>
+		echo '<'.$this->wrapperElement.' '.$this->attributes.'>
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#'.$this->id.'-collapse">
 					<span class="sr-only">Toggle navigation</span>
@@ -203,7 +220,7 @@ class Menu
 				<ul class="nav navbar-nav">';
 		$this->_processLinks($this->menu);
 		$this->_renderLinks();
-		echo '</ul></div></nav><!-- end navigation #'.$this->id.' -->';
+		echo '</ul></div></'.$this->wrapperElement.'><!-- end navigation #'.$this->id.' -->';
 		return ob_get_clean();
 	}
 	
