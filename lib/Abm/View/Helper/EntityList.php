@@ -223,15 +223,7 @@ class EntityList
 			}
 			if(!empty($actions)){
 				foreach($actions as $action){
-					if($action == 'order') $action = 'move up';
-					$param = str_replace(' ', '', "{$action}_{$entity->getCleanName()}");
-					$id = $row->{$entity->getPrimaryKey()};
-					$out[] = "<td><a href=\"?$param=$id\">
-					<span class=\"action $action\" title=\"".$view->__(ucfirst($action), $view::TEXTDOMAIN)."\">
-						<span class=\"fa {$this->getIcon($action)} fa-lg\"></span>
-						<span class=\"text\">".$this->getActionName($action, $row)."</span>
-					</span>
-					</a></td>";
+					$out[] = $this->actionCell($action, $entity, $field, $row);
 				}
 			}
 			$out[] = '</tr>';
@@ -249,6 +241,28 @@ class EntityList
 	public function bodyCell(Field $field, Row $row)
 	{
 		return "<td>{$field->render($row)}</td>";
+	}
+	
+	/**
+	 * Render a table body action cell
+	 * @param string $action
+	 * @param Entity $entity
+	 * @param Field $field
+	 * @param Row $row
+	 * @return string
+	 */
+	public function actionCell($action, Entity $entity, Field $field, Row $row)
+	{
+		$view = $this->view;
+		if($action == 'order') $action = 'move up';
+		$param = str_replace(' ', '', "{$action}_{$entity->getCleanName()}");
+		$id = $row->{$entity->getPrimaryKey()};
+		return "<td><a href=\"?$param=$id\">
+		<span class=\"action $action\" title=\"".$view->__(ucfirst($action), $view::TEXTDOMAIN)."\">
+		<span class=\"fa {$this->getIcon($action)} fa-lg\"></span>
+		<span class=\"text\">".$this->getActionName($action, $row)."</span>
+		</span>
+		</a></td>";
 	}
 	
 	/**
