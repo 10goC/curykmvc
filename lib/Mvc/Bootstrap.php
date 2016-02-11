@@ -8,13 +8,13 @@ abstract class Bootstrap
 {
 	/**
 	 * The injected Application object
-	 * @var Mvc\Application
+	 * @var Application
 	 */
 	protected $application;
 	
 	/**
 	 * Set Application object
-	 * @param Mvc\Application $application
+	 * @param Application $application
 	 */
 	public function __construct(Application $application)
 	{
@@ -23,7 +23,7 @@ abstract class Bootstrap
 	
 	/**
 	 * Get application
-	 * @return Mvc\Application
+	 * @return Application
 	 */
 	public function getApplication()
 	{
