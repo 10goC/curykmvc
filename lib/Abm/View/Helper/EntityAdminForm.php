@@ -93,12 +93,10 @@ class EntityAdminForm
 		}
 		$out[] = '<div class="form-group">
 				<input type="submit" class="btn btn-primary" value="'.$view->__('Save changes', $view::TEXTDOMAIN).'">
-				<p class="btn">
-					<a class="text-danger cancel-btn" href="'.$view->removeQs().'">
-						<span class="fa fa-ban"></span>
-						'.$view->__('Cancel', $view::TEXTDOMAIN).'
-					</a>
-				</p>
+				<a class="btn text-danger cancel-btn" href="'.$view->removeQs().'">
+					<span class="fa fa-ban"></span>
+					'.$view->__('Cancel', $view::TEXTDOMAIN).'
+				</a>
 			</div>
 		</form>';
 		return implode(PHP_EOL, $out);
@@ -225,8 +223,8 @@ class EntityAdminForm
 				$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
 				$out[] = "<textarea class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $placeholder $required>$value</textarea>";
 				break;
-				case 'select':
-				case 'dbSelect':
+			case 'select':
+			case 'dbSelect':
 				$out[] = "<select class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $required>";
 				if($field->emptyFirstOption !== false){
 					$out[] = '<option value="">'.$this->view->__($field->emptyFirstOption).'</option>';
@@ -252,7 +250,7 @@ class EntityAdminForm
 				$out[] = "<input type=\"hidden\" name=\"$fieldName\" value=\"0\" />
 				<input type=\"checkbox\" name=\"$fieldName\" id=\"$fieldId\" value=\"1\" $checked />";
 				break;
-				case 'checkbox':
+			case 'checkbox':
 				$options = $field->getOptions();
 				foreach($options as $opVal => $option){
 					$optionName = "{$fieldName}[$opVal]";
@@ -286,7 +284,7 @@ class EntityAdminForm
 				break;
 			default:
 				if($value){
-					$value = "value=\"$value\"";
+					$value = 'value="'.htmlspecialchars($value).'"';
 				}
 				if($fieldType == 'image'){
 					$fieldType = 'file';
