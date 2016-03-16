@@ -289,8 +289,10 @@ class EntityAdminForm
 				if($fieldType == 'image'){
 					$fieldType = 'file';
 				}
+				$numberAtts = $fieldType == 'number' ? 'step="any"' : '';
+
 				$placeholder = $field->placeholder ? "placeholder=\"$field->placeholder\"" : '';
-				$out[] = "<input class=\"form-control $class\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value $placeholder $required />";
+				$out[] = "<input class=\"form-control $class\" type=\"$fieldType\" name=\"$fieldName\" id=\"$fieldId\" $value $placeholder $required $numberAtts />";
 				break;
 		}
 		$out[] = '</label>
