@@ -363,15 +363,13 @@ class Field
 			case 'dbSelect':
 			case 'select':
 				$source = $this->getOptions();
-				if($value){
-					if(isset($source[$value])){
-						$value = $source[$value];
-					}else{
-						// Search within optgroups
-						foreach($source as $option){
-							if(is_array($option) && isset($option[$value])){
-								$value = $option[$value];
-							}
+				if(isset($source[$value])){
+					$value = $source[$value];
+				}else{
+					// Search within optgroups
+					foreach($source as $option){
+						if(is_array($option) && isset($option[$value])){
+							$value = $option[$value];
 						}
 					}
 				}
