@@ -59,7 +59,7 @@ class Application
 			'controller' => $controllerRequest,
 			'action' => $actionRequest
 		);
-		if (count($requestPart > 2)) {
+		if (count($requestPart) > 2) {
 			for ($i = 2; $i < count($requestPart); $i += 2) {
 				if (isset($requestPart[$i + 1])) {
 					$this->request[$requestPart[$i]] = $requestPart[$i + 1];
