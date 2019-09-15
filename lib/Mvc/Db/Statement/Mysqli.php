@@ -113,7 +113,7 @@ class Mysqli
 		// send $params as input parameters to the statement
 		if ($params) {
 			array_unshift($params, str_repeat('s', count($params)));
-			$stmtParams = array();
+			$stmtParams = [];
 			foreach ($params as $k => &$value) {
 				$stmtParams[$k] = &$value;
 			}
@@ -145,7 +145,7 @@ class Mysqli
 		if ($this->meta !== false) {
 	
 			// get the column names that will result
-			$this->keys = array();
+			$this->keys = [];
 			foreach ($this->meta->fetch_fields() as $col) {
 				$this->keys[] = $col->name;
 			}
@@ -156,7 +156,7 @@ class Mysqli
 			// set up references to the result binding space.
 			// just passing $this->values in the call_user_func_array()
 			// below won't work, you need references.
-			$refs = array();
+			$refs = [];
 			foreach ($this->values as $i => &$f) {
 				$refs[$i] = &$f;
 			}
@@ -198,7 +198,7 @@ class Mysqli
 
         // dereference the result values, otherwise things like fetchAll()
         // return the same values for every entry (because of the reference).
-        $values = array();
+        $values = [];
         foreach ($this->values as $key => $val) {
             $values[] = $val;
         }

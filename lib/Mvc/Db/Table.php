@@ -41,10 +41,10 @@ class Table
 	public function __construct(Controller $controller, $table = null)
 	{
 		$this->controller = $controller;
-		if($table){
+		if ($table) {
 			$this->table = $table;
 		}
-		if(!$this->table){
+		if (!$this->table) {
 			throw new \Exception('Table name not set for table '.get_class($this));
 		}
 	}
@@ -101,12 +101,12 @@ class Table
 	 * the query. Question mark (?) placeholders must be present in $select
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetch($select, $bind = array()){
+	public function fetch($select, $bind = []) {
 		$result = $this->getDb()->query($select, $bind);
-		if($result){
+		if ($result) {
 			$resultsetClass = $this->resultsetClass;
 			$resultset = new $resultsetClass($this);
-			while($row = $result->fetchRow()){
+			while($row = $result->fetchRow()) {
 				$resultset->addRow($row);
 			}
 			return $resultset;
@@ -123,12 +123,12 @@ class Table
 	public function insert(array $values)
 	{
 		$keys = array_keys($values);
-		array_walk($keys, array($this, 'filterColumnName'));
+		array_walk($keys, [$this, 'filterColumnName']);
 		$placeholders = $this->getPlaceholders($keys);
 		$columns = $keys ? '`' . implode('`, `', $keys) . '`' : '';
 		$query = "INSERT INTO `$this->table` ($columns) VALUES ($placeholders)";
 		$result = $this->getDb()->query($query, $values);
-		if($result){
+		if ($result) {
 			return $this->getDb()->insertedId();
 		}
 		return null;
@@ -144,30 +144,30 @@ class Table
 	 */
 	public function update($key, $id, $values)
 	{
-		if(is_string($values)){
+		if (is_string($values)) {
 			$placeholders = $values;
-		}else{
-			foreach($values as $column => $value){
-				if($value === null){
+		} else {
+			foreach ($values as $column => $value) {
+				if ($value === null) {
 					$set[] = "`$column` = NULL";
 					unset($values[$column]);
-				}else{
+				} else {
 					$set[] = "`$column` = ?";
 				}
 			}
 			$placeholders = implode(', ', $set);
 		}
-		foreach((array) $key as $k){
+		foreach ((array) $key as $k) {
 			$where[] = "`$k` = ?";
 		}
 		$where = implode(" AND ", $where);
 		$query = "UPDATE `$this->table` SET $placeholders WHERE $where";
 		$bind = array_values($values);
-		foreach((array) $id as $i){
+		foreach ((array) $id as $i) {
 			$bind[] = $i;
 		}
 		$result = $this->getDb()->query($query, $bind);
-		if($result){
+		if ($result) {
 			return $this->getDb()->affectedRows();
 		}
 		return null;
@@ -181,25 +181,25 @@ class Table
 	 */
 	public function delete($key, $ids)
 	{
-		if(is_array($key)){
-			$bind = array();
-			foreach($ids as $id){
+		if (is_array($key)) {
+			$bind = [];
+			foreach ($ids as $id) {
 				$bind = array_merge($bind, explode(',', $id));
-				$wherePart = array();
-				foreach ($key as $k){
+				$wherePart = [];
+				foreach ($key as $k) {
 					$wherePart[] = "$k = ?";
 				}
 				$where[] = '('.implode(' AND ', $wherePart).')';
 			}
 			$where = implode(' OR ', $where);
 			$query = "DELETE FROM $this->table WHERE $where";
-		}else{
+		} else {
 			$placeholders = $this->getPlaceholders($ids);
 			$query = "DELETE FROM $this->table WHERE $key IN( $placeholders )";
 			$bind = $ids;
 		}
 		$result = $this->getDb()->query($query, $bind);
-		if($result){
+		if ($result) {
 			return $this->getDb()->affectedRows();
 		}
 		return null;

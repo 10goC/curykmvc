@@ -37,7 +37,7 @@ class Config
 	 */
 	public function __get($var)
 	{
-		if(isset($this->config[$var])){
+		if (isset($this->config[$var])) {
 			$name = $this->name ? "$this->name/$var" : $var;
 			return new Config($this->config[$var], $name);
 		}
@@ -51,7 +51,7 @@ class Config
 	 */
 	public function __toString()
 	{
-		if(!is_array($this->config)){
+		if (!is_array($this->config)) {
 			return (string) $this->config;
 		}
 		return print_r($this->config, 1);
@@ -73,9 +73,9 @@ class Config
 	 */
 	public function toArray()
 	{
-		if(is_array($this->config)){
+		if (is_array($this->config)) {
 			return $this->config;
-		}else{
+		} else {
 			throw new \Exception("$this->name is not an array");
 		}
 	}

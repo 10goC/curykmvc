@@ -30,12 +30,12 @@ class Target extends Entity
 		$this->field = $field;
 		
 		// If no foreign key defined use primary key of related entity
-		if(!$this->foreignKey){
+		if (!$this->foreignKey) {
 			$this->foreignKey = $field->getEntity()->getPrimaryKey();
 		}
 		
 		// If no fields defined use source primary key
-		if(!$this->fields){
+		if (!$this->fields) {
 			$this->fields = array($this->field->getSource()->getPrimaryKey());
 		}
 		parent::__construct($field->getEntity()->getController());
@@ -57,8 +57,8 @@ class Target extends Entity
 	 */
 	public function insertRelated($data, $foreignKeyValue)
 	{
-		if(is_array($data)){
-			foreach($data as $value){
+		if (is_array($data)) {
+			foreach ($data as $value) {
 				$values[$this->foreignKey] = $foreignKeyValue;
 				$values[$this->firstField()] = $value;
 				$this->insert($values);
@@ -75,16 +75,16 @@ class Target extends Entity
 	public function updateRelated($data, $foreignKeyValue)
 	{
 		$prevData = $this->fetchArray("$this->foreignKey = ?", $foreignKeyValue);
-		$insert = $data ? array_diff($data, $prevData) : array();
+		$insert = $data ? array_diff($data, $prevData) : [];
 		$delete = $data ? array_diff($prevData, $data) : $prevData;
 		$affectedRows = 0;
-		if($delete){
+		if ($delete) {
 			$affectedRows += $this->delete(array_keys($delete));
 		}
-		foreach($insert as $value){
+		foreach ($insert as $value) {
 			$values[$this->foreignKey] = $foreignKeyValue;
 			$values[$this->firstField()] = $value;
-			if($this->insert($values)){
+			if ($this->insert($values)) {
 				$affectedRows++;
 			}
 		}

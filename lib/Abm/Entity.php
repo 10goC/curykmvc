@@ -86,25 +86,25 @@ class Entity
 	 * The array of messages associated with the entity.
 	 * @var array
 	 */
-	protected $messages = array();
+	protected $messages = [];
 	
 	/**
 	 * The actions to be performed.
 	 * @var array
 	 */
-	protected $actions = array();
+	protected $actions = [];
 	
 	/**
 	 * The array of fields and values to be updated after the current action pertaining to foreign tables.
 	 * @var array
 	 */
-	protected $callbacks = array();
+	protected $callbacks = [];
 	
 	/**
 	 * The array of performed actions.
 	 * @var array
 	 */
-	protected $performed = array();
+	protected $performed = [];
 	
 	/**
 	 * Whether the entity rows should be ordered by a certain column.
@@ -159,9 +159,9 @@ class Entity
 	{
 		$this->controller = $controller;
 		$session = &$this->controller->getSession(self::FLASH_MESSAGES);
-		if(isset($session[$this->getCleanName()])){
-			foreach($session[$this->getCleanName()] as $type => $messages){
-				foreach($messages as $message){
+		if (isset($session[$this->getCleanName()])) {
+			foreach ($session[$this->getCleanName()] as $type => $messages) {
+				foreach ($messages as $message) {
 					$this->addMessage($message, $type);
 				}
 			}
@@ -184,7 +184,7 @@ class Entity
 	 */
 	public function getTableName()
 	{
-		if($this->tableName === null){
+		if ($this->tableName === null) {
 			$this->tableName = false;
 			$this->addMessage(sprintf($this->__('Table name not set for entity %s'), $this->getName()), self::ERROR);
 		}
@@ -198,19 +198,19 @@ class Entity
 	 */
 	public function getTable()
 	{
-		if($this->table === null){
-			if($tableName = $this->getTableName()){
+		if ($this->table === null) {
+			if ($tableName = $this->getTableName()) {
 				$tableClass = $this->tableClass;
 				$this->table = new $tableClass($this->controller, $tableName);
 				$this->table->setRowClass($this->rowClass);
-			}else{
+			} else {
 				$this->table = false;
 			}
 		}
-		if($this->table && !$this->table instanceof Table){
-			if(is_object($this->table)){
+		if ($this->table && !$this->table instanceof Table) {
+			if (is_object($this->table)) {
 				throw new \Exception(sprintf('Incorrect table class '.get_class($this->table).' specified for entity %s', $this->name));
-			}else{
+			} else {
 				throw new \Exception('Incorrect type for '.get_class($this) . '::$table. Expected: Mvc\Db\Table, found: ' . gettype($this->table));
 			}
 			$this->table = false;
@@ -224,7 +224,7 @@ class Entity
 	 */
 	public function getName()
 	{
-		if(!$this->name){
+		if (!$this->name) {
 			$reflection = new \ReflectionClass($this);
 			$this->name = $reflection->getShortName();
 			$this->addMessage(sprintf($this->__('Entity name not set for entity %s'), $this->name), self::NOTICE);
@@ -239,7 +239,7 @@ class Entity
 	 */
 	public function getCleanName()
 	{
-		if(!$this->cleanName){
+		if (!$this->cleanName) {
 			$this->cleanName = strtolower(preg_replace('/[^a-z0-9]/i', '', $this->getName()));
 		}
 		return $this->cleanName;
@@ -266,9 +266,9 @@ class Entity
 	public function getField($fieldName)
 	{
 		$fieldObjects = $this->getFields();
-		if(isset($fieldObjects[$fieldName])){
+		if (isset($fieldObjects[$fieldName])) {
 			return $fieldObjects[$fieldName];
-		}else{
+		} else {
 			throw new \Exception(sprintf($this->__("Field $fieldName does not exist in entity %s"), $this->getName()));
 		}
 	}
@@ -279,10 +279,10 @@ class Entity
 	 */
 	public function getFields()
 	{
-		if($this->fieldObjects === null){
-			$this->fieldObjects = array();
-			if($this->fields === null){
-				$this->fields = array();
+		if ($this->fieldObjects === null) {
+			$this->fieldObjects = [];
+			if ($this->fields === null) {
+				$this->fields = [];
 				$this->addMessage(sprintf($this->__('Fields not set for entity %s'), $this->getName()), self::ERROR);
 			}
 			$this->addFields($this->fields);
@@ -310,7 +310,7 @@ class Entity
 		$this->getFields();
 		
 		// Add new fields
-		foreach($fields as $fieldId => $field){
+		foreach ($fields as $fieldId => $field) {
 			$fieldClass = is_array($field) && isset($field['class']) ? $field['class'] : $this->defaultFieldClass;
 			$fieldObject = new $fieldClass($this, $fieldId, $field);
 			$this->fieldObjects[$fieldObject->getName()] = $fieldObject;
@@ -323,10 +323,10 @@ class Entity
 	 */
 	public function removeField($field)
 	{
-		if(isset($this->fields[$field])){
+		if (isset($this->fields[$field])) {
 			unset($this->fields[$field]);
 		}
-		if(isset($this->fieldObjects[$field])){
+		if (isset($this->fieldObjects[$field])) {
 			unset($this->fieldObjects[$field]);
 		}
 		return $this;
@@ -366,10 +366,10 @@ class Entity
 	 */
 	public function addPerformed($action, $value)
 	{
-		if(isset($this->performed[$action])){
+		if (isset($this->performed[$action])) {
 			array_push($this->performed[$action], $value);
-		}else{
-			$this->performed[$action] = array($value);
+		} else {
+			$this->performed[$action] = [$value];
 		}
 	}
 	
@@ -380,7 +380,7 @@ class Entity
 	 */
 	public function getPerformed($action = null)
 	{
-		if($action){
+		if ($action) {
 			return isset($this->performed[$action]) ? $this->performed[$action] : null;
 		}
 		return $this->performed;
@@ -396,20 +396,20 @@ class Entity
 	{
 		$actions = ($actions) ?: $this->getActions();
 		$entityName = $this->getCleanName();
-		foreach($actions as $action){
+		foreach ($actions as $action) {
 			switch ($action) {
 				// Add
 				case 'add':
 					$add = $this->getPostValues('add');
-					if($add){
-						foreach($add as $i => $values){
+					if ($add) {
+						foreach ($add as $i => $values) {
 							$this->currentActionId = $i;
 							$values = $this->getInsertValues($values);
-							if($this->abort){
+							if ($this->abort) {
 								$this->abort = false;	
-							}else{
+							} else {
 								$insertedId = $this->insert($values);
-								if($insertedId){
+								if ($insertedId) {
 									$this->addPerformed('added', $insertedId);
 								}
 							}
@@ -420,15 +420,15 @@ class Entity
 				// Edit
 				case 'edit':
 					$edit = $this->getPostValues('edit');
-					if($edit){
-						foreach($edit as $id => $values){
+					if ($edit) {
+						foreach ($edit as $id => $values) {
 							$this->currentActionId = $id;
 							$values = $this->getUpdateValues($values);
-							if($this->abort){
+							if ($this->abort) {
 								$this->abort = false;
-							}else{
+							} else {
 								$success = $this->update($id, $values);
-								if($success){
+								if ($success) {
 									$this->addPerformed('edited', $id);
 								}
 							}
@@ -439,17 +439,17 @@ class Entity
 				// Delete
 				case 'delete':
 					$delete = isset($_POST["delete_$entityName"]) ? $_POST["delete_$entityName"] : null;
-					if($delete){
-						foreach($delete as $id => $value){
+					if ($delete) {
+						foreach ($delete as $id => $value) {
 							$this->currentActionId = $id;
-							if(is_numeric($id) && $value == 1){
+							if (is_numeric($id) && $value == 1) {
 								$deleteIds[] = $id;
 							}
 						}
 								
-						if(!empty($deleteIds)){
+						if (!empty($deleteIds)) {
 							$deleted = $this->delete($deleteIds);
-							if($deleted){
+							if ($deleted) {
 								$this->addPerformed('deleted', $delete);
 							}
 						}
@@ -457,24 +457,24 @@ class Entity
 					break;
 				case 'order':
 					$moveUp = isset($_GET["moveup_$entityName"]) ? $_GET["moveup_$entityName"] : null;
-					if($moveUp){
-						if($this->isOrdered()){
+					if ($moveUp) {
+						if ($this->isOrdered()) {
 							$ordField = $this->ordered['field'];
 							$list = $this->fetchIds(array($moveUp));
-							if(count($list)){
+							if (count($list)) {
 								$item = current($list);
 								$currentOrder = $item->$ordField;
 								$newOrder = $currentOrder -1;
-								if($newOrder > 0){
-									$updated = $this->update($moveUp, array($ordField => $newOrder));
-									if($updated){
+								if ($newOrder > 0) {
+									$updated = $this->update($moveUp, [$ordField => $newOrder]);
+									if ($updated) {
 										$this->addPerformed('moved up', $moveUp);
 										$sql = "UPDATE `{$this->getTableName()}`
 										SET `$ordField` = $currentOrder
 										WHERE `$ordField` = $newOrder
 										AND `{$this->getPrimaryKey()}` != ?";
-										$bind = array($moveUp);
-										if($this->isCategorized()){
+										$bind = [$moveUp];
+										if ($this->isCategorized()) {
 											$catField = $this->categorized['field'];
 											$sql .= " AND `$catField` = ?";
 											$bind[] = $item->$catField;
@@ -488,7 +488,7 @@ class Entity
 					break;
 			}
 		}
-		if($this->performed){
+		if ($this->performed) {
 			$this->addPerformedActionsFlashMessages();
 		}
 		return count($this->performed);
@@ -508,7 +508,7 @@ class Entity
 	 */
 	public function flushMessages()
 	{
-		$this->messages = array();
+		$this->messages = [];
 	}
 	
 	/**
@@ -517,7 +517,7 @@ class Entity
 	public function flushFlashMessages()
 	{
 		$session = &$this->getController()->getSession(self::FLASH_MESSAGES);
-		$session[$this->getCleanName()] = array();
+		$session[$this->getCleanName()] = [];
 	}
 	
 	/**
@@ -527,7 +527,7 @@ class Entity
 	 */
 	public function addMessage($message, $type = self::NOTICE)
 	{
-		if(!isset($this->messages[$type])) $this->messages[$type] = array();
+		if (!isset($this->messages[$type])) $this->messages[$type] = [];
 		array_push($this->messages[$type], $message);
 	}
 	
@@ -536,7 +536,7 @@ class Entity
 	 */
 	public function addPerformedActionsFlashMessages()
 	{
-		foreach($this->performed as $action => $items){
+		foreach ($this->performed as $action => $items) {
 			$message = count($items) == 1 ?
 				$this->__(sprintf($this->__("%s $action successfully"), $this->__($this->getName(), Application::TEXTDOMAIN)), Application::TEXTDOMAIN) :
 				sprintf($this->__('%d'.sprintf($this->__(" %s $action successfully"), $this->__($this->getPlural(), Application::TEXTDOMAIN)), Application::TEXTDOMAIN), count($items))
@@ -573,10 +573,10 @@ class Entity
 	 */
 	public function isCategorized()
 	{
-		if($this->categorized !== false){
-			if(isset($this->categorized['field'])){
+		if ($this->categorized !== false) {
+			if (isset($this->categorized['field'])) {
 				return true;
-			}else{
+			} else {
 				$this->addMessage(sprintf($this->__('Missing \'field\' key in \'categorized\' property for entity %s'), $this->name), self::NOTICE);
 			}
 		}
@@ -589,10 +589,10 @@ class Entity
 	 */
 	public function isOrdered()
 	{
-		if($this->ordered !== false){
-			if(isset($this->ordered['field'])){
+		if ($this->ordered !== false) {
+			if (isset($this->ordered['field'])) {
 				return true;
-			}else{
+			} else {
 				$this->addMessage(sprintf($this->__('Ordering field not defined for entity %s'), $this->name), self::NOTICE);
 			}
 		}
@@ -615,11 +615,11 @@ class Entity
 	 */
 	public function getNextOrderValue($cat = null)
 	{
-		$bind = array();
+		$bind = [];
 		$sql = "SELECT IFNULL(MAX(`{$this->ordered['field']}`), 0) AS `max` FROM `{$this->getTableName()}`";
-		if($this->isCategorized() && $cat){
+		if ($this->isCategorized() && $cat) {
 			$sql .= " WHERE `{$this->categorized['field']}` = ?";
-			$bind = array($cat);
+			$bind = [$cat];
 		}
 		$result = $this->getTable()->fetch($sql, $bind);
 		return current($result)->max +1;
@@ -633,30 +633,30 @@ class Entity
 	 * WHERE clause. Question mark (?) placeholders must be present in $where
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetch($where = 1, $bind = array(), $options = array())
+	public function fetch($where = 1, $bind = [], $options = [])
 	{
 		$table = $this->getTable();
-		if(!$table) return array();
+		if (!$table) return [];
 		$pk = $this->getPrimaryKey();
-		if(is_array($pk)){
-			foreach($pk as $pkc){
+		if (is_array($pk)) {
+			foreach ($pk as $pkc) {
 				$columns[] = "`$this->tableName`.`$pkc`";
 			}
-		}else{
+		} else {
 			$columns[] = "`$this->tableName`.`$pk`";
 		}
 		$group = "";
 		$order = "";
-		$tables = array($this->tableName => 'main');
-		if(isset($options['join'])){
-			if(is_string($options['join'])){
-				$tables[$options['join']] = array('join' => 'INNER');
-			}else{
-				foreach($options['join'] as $tableName => $table){
-					if(is_string($table)){
-						$tables[$table] = array('join' => 'INNER');
-					}else{
-						if(!isset($table['join'])){
+		$tables = [$this->tableName => 'main'];
+		if (isset($options['join'])) {
+			if (is_string($options['join'])) {
+				$tables[$options['join']] = ['join' => 'INNER'];
+			} else {
+				foreach ($options['join'] as $tableName => $table) {
+					if (is_string($table)) {
+						$tables[$table] = ['join' => 'INNER'];
+					} else {
+						if (!isset($table['join'])) {
 							$table['join'] = 'INNER';
 						}
 						$tables[$tableName] = $table;
@@ -664,51 +664,51 @@ class Entity
 				}
 			}
 		}
-		foreach ($this->getFields() as $field){
+		foreach ($this->getFields() as $field) {
 			$fieldTable = $field->table->getName();
-			if(!isset($tables[$fieldTable])){
-				$tables[$fieldTable] = array('join' => $field->join);
+			if (!isset($tables[$fieldTable])) {
+				$tables[$fieldTable] = ['join' => $field->join];
 			}
-			if($field->ref){
+			if ($field->ref) {
 				$ref = "`$fieldTable`.`$field->ref`";
-				if(!in_array($ref, $columns)){
+				if (!in_array($ref, $columns)) {
 					$columns[] = $ref;
 				}
 			}
-			if($field->getType() == 'dbCheckbox'){
+			if ($field->getType() == 'dbCheckbox') {
 				$columns[] = "GROUP_CONCAT({$field->getTarget()->firstField()} SEPARATOR ',') AS `{$field->getName()}`";
 				$targetTable = $field->getTarget()->getTableName();
 				$foreignKey = $field->getTarget()->getForeignKey();
 				$tables[$targetTable] = array('join' => 'LEFT', 'on' => "`$this->tableName`.`{$this->getPrimaryKey()}` = `$targetTable`.`$foreignKey`");
 				// $from .= " LEFT JOIN `$targetTable` ON `$this->tableName`.`{$this->getPrimaryKey()}` = `$targetTable`.`$foreignKey`";
 				$group = "GROUP BY `$this->tableName`.`{$this->getPrimaryKey()}`";
-			}else{
+			} else {
 				$columns[] = "`$fieldTable`.`{$field->getName()}`";
 			}
 		}
-		if($this->isCategorized()){
+		if ($this->isCategorized()) {
 			$catField = "`$fieldTable`.`{$this->categorized['field']}`";
-			if(!in_array($catField, $columns)){
+			if (!in_array($catField, $columns)) {
 				$columns[] = $catField;
 			}
 		}
-		if($this->isOrdered()){
+		if ($this->isOrdered()) {
 			$orderField = "`$fieldTable`.`{$this->ordered['field']}`";
-			if(!in_array($orderField, $columns)){
+			if (!in_array($orderField, $columns)) {
 				$columns[] = $orderField;
 			}
-			if(!preg_match("/ORDER BY/i", $where)){
+			if (!preg_match("/ORDER BY/i", $where)) {
 				$order = " ORDER BY $orderField";
 			}
 		}
-		foreach($tables as $table => $fromTable){
-			if($fromTable == 'main'){
+		foreach ($tables as $table => $fromTable) {
+			if ($fromTable == 'main') {
 				$from = "`$table`";
-			}else{
+			} else {
 				$from .= " {$fromTable['join']} JOIN `$table`";
-				if(isset($fromTable['on'])){
+				if (isset($fromTable['on'])) {
 					$from .= " ON {$fromTable['on']}";
-				}else{
+				} else {
 					$using = isset($fromTable['using']) ? $fromTable['using'] : $pk;
 					$from .= " USING( `$using` )";
 				}
@@ -727,11 +727,11 @@ class Entity
 	 * the query. Question mark (?) placeholders must be present in $sql
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetchSql($sql, $bind = array())
+	public function fetchSql($sql, $bind = [])
 	{
 		$table = $this->getTable();
-		if(!$table) return array();
-		if($this->paginator){
+		if (!$table) return [];
+		if ($this->paginator) {
 			$countSql = preg_replace(
 				array('/SELECT.*FROM/is', '/GROUP BY.*/i' ), 
 				array('SELECT COUNT(DISTINCT `'.$this->getTableName().'`.`'.$this->getPrimaryKey().'` ) AS `count` FROM ', ''), 
@@ -743,7 +743,7 @@ class Entity
 			$sql .= ' LIMIT '.$this->paginator->getStartIndex().', '.$this->paginator->getItemsPerPage();
 		}
 		$result = $table->fetch($sql, $bind);
-		if($this->paginator){
+		if ($this->paginator) {
 			$this->paginator->setPageTotalItems(count($result));
 		}
 		return $result;
@@ -757,7 +757,7 @@ class Entity
 	 * @param array $bind
 	 * @return Mvc\Db\Resultset
 	 */
-	public function fetchOptions(array $options = array(), $where = 1, $bind = array())
+	public function fetchOptions(array $options = [], $where = 1, $bind = [])
 	{
 		return $this->fetch($where, $bind, $options);
 	}
@@ -770,16 +770,16 @@ class Entity
 	 */
 	public function fetchIds($ids, $key = null)
 	{
-		if(!$key){
+		if (!$key) {
 			$key = $this->primaryKey;
 		}
 		$placeholders = array_fill(0, count((array) $ids), '?');
-		if(is_array($key)){
-			foreach($key as $k){
+		if (is_array($key)) {
+			foreach ($key as $k) {
 				$columnNames[] = "`$this->tableName`.`$k`";
 			}
 			$columns = "CONCAT_WS(',', ".implode(',', $columnNames).")";
-		}else{
+		} else {
 			$columns = "`$this->tableName`.`$key`";
 		}
 		return $this->fetch("$columns IN( ".implode(', ', $placeholders)." )", (array) $ids);
@@ -795,18 +795,18 @@ class Entity
 	 * WHERE clause. Question mark (?) placeholders must be present in $where
 	 * @return array
 	 */
-	public function fetchArray($where = 1, $bind = array())
+	public function fetchArray($where = 1, $bind = [])
 	{
-		$out = array();
+		$out = [];
 		$result = $this->fetch($where, $bind);
-		foreach($result as $row){
-			if(is_array($this->primaryKey)){
-				$idPart = array();
-				foreach($this->primaryKey as $key){
+		foreach ($result as $row) {
+			if (is_array($this->primaryKey)) {
+				$idPart = [];
+				foreach ($this->primaryKey as $key) {
 					$idPart[] = $row->$key;
 				}
 				$id = implode(',', $idPart);
-			}else{
+			} else {
 				$id = $row->{$this->primaryKey};
 			}
 			$out[$id] = $row->{$this->firstField()};
@@ -823,21 +823,21 @@ class Entity
 	public function insert(array $values)
 	{
 		$table = $this->getTable();
-		if(!$table) return null;
-		if($this->isOrdered() && $this->defaultOrder() == self::ORDER_LAST){
+		if (!$table) return null;
+		if ($this->isOrdered() && $this->defaultOrder() == self::ORDER_LAST) {
 			// New item goes last, fetch next order value
 			$cat = $this->isCategorized() ? $values[$this->categorized['field']] : null;
 			$values[$this->ordered['field']] = $this->getNextOrderValue($cat);
 		}
 		$result = $table->insert($values);
-		if($result){
-			if($this->isOrdered() && $this->defaultOrder() == self::ORDER_FIRST){
+		if ($result) {
+			if ($this->isOrdered() && $this->defaultOrder() == self::ORDER_FIRST) {
 				// New items goes first, move down the rest
 				$sql = "UPDATE `{$this->getTableName()}`
 				SET `{$this->ordered['field']}` = `{$this->ordered['field']}` +1
 				WHERE `{$this->getPrimaryKey()}` != $result";
-				$bind = array();
-				if($this->isCategorized()){
+				$bind = [];
+				if ($this->isCategorized()) {
 					$sql .= " AND `{$this->categorized['field']}` = ?";
 					$bind[] = $values[$this->categorized['field']];
 				}
@@ -854,9 +854,9 @@ class Entity
 	 */
 	public function afterInsert($insertId)
 	{
-		if($this->callbacks){
-			foreach($this->callbacks as $callback){
-				if($target = $callback['field']->getTarget()){
+		if ($this->callbacks) {
+			foreach ($this->callbacks as $callback) {
+				if ($target = $callback['field']->getTarget()) {
 					$target->insertRelated($callback['values'], $insertId);
 				}
 			}
@@ -873,24 +873,24 @@ class Entity
 	public function update($id, array $values)
 	{
 		$table = $this->getTable();
-		if(!$table) return null;
+		if (!$table) return null;
 		$recategorize = false;
-		if($this->isOrdered() && $this->isCategorized()){
+		if ($this->isOrdered() && $this->isCategorized()) {
 			// Category may have changed
 			$catField = $this->categorized['field'];
 			$ordField = $this->ordered['field'];
-			if(isset($values[$catField])){
+			if (isset($values[$catField])) {
 				$result = $this->fetchIds($id);
-				if($result){
+				if ($result) {
 					$row = current($result);
 					$rowOrder = $row->$ordField;
 					$recategorize = $values[$catField] != $row->$catField;
-					if($recategorize){
+					if ($recategorize) {
 						// Category has changed
-						if($this->defaultOrder() == self::ORDER_LAST){
+						if ($this->defaultOrder() == self::ORDER_LAST) {
 							// Move last
 							$values[$ordField] = $this->getNextOrderValue($values[$catField]);
-						}else{
+						} else {
 							// Move first
 							$values[$ordField] = 1;
 						}
@@ -901,24 +901,24 @@ class Entity
 		
 		$success = 0;
 		
-		if($values){
+		if ($values) {
 			$success = $table->update($this->getPrimaryKey(), $id, $values);
-			if($success && $recategorize){
+			if ($success && $recategorize) {
 				// Category changed, move up items to fill the gap
 				$sql = "UPDATE `{$this->getTableName()}`
 				SET `$ordField` = `$ordField` -1
 				WHERE `$ordField` > $rowOrder
 				AND `$catField` = ?";
-				$bind = array($row->$catField);
+				$bind = [$row->$catField];
 				$this->getTable()->getDb()->query($sql, $bind);
 					
-				if($this->defaultOrder() == self::ORDER_FIRST){
+				if ($this->defaultOrder() == self::ORDER_FIRST) {
 					// Default first, move down the rest
 					$sql = "UPDATE `{$this->getTableName()}`
 					SET `$ordField` = `$ordField` +1
 					WHERE `{$this->getPrimaryKey()}` != $id
 					AND `$catField` = ?";
-					$bind = array($values[$catField]);
+					$bind = [$values[$catField]];
 					$this->getTable()->getDb()->query($sql, $bind);
 				}
 					
@@ -938,24 +938,24 @@ class Entity
 	public function afterUpdate($id)
 	{
 		$success = 0;
-		if($this->callbacks){
-			foreach($this->callbacks as $callback){
+		if ($this->callbacks) {
+			foreach ($this->callbacks as $callback) {
 				$field = $callback['field'];
-				if($field->table != $this->table){
-					if($field->ref){
-						foreach((array) $callback['values'] as $ref => $value){
+				if ($field->table != $this->table) {
+					if ($field->ref) {
+						foreach ((array) $callback['values'] as $ref => $value) {
 							$success += $field->table->update(
 								array($this->getPrimaryKey(), $field->ref),
 								array($id, $ref),
 								array($field->getName() => $value)
 							);
 						}
-					}else{
+					} else {
 						$target = $field->getTarget();
 						$success += $target->updateRelated($callback['values'], $id);
 					}
 					// unset($values[$field->getName()]);
-				}else{
+				} else {
 					$target = $field->getTarget();
 					$success += $target->updateRelated($callback['values'], $id);
 				}
@@ -974,46 +974,46 @@ class Entity
 	public function delete($values, $key = null)
 	{
 		$table = $this->getTable();
-		if(!$table) return null;
-		foreach($this->getFields() as $field){
-			if($field->getType() == 'dbCheckbox'){
+		if (!$table) return null;
+		foreach ($this->getFields() as $field) {
+			if ($field->getType() == 'dbCheckbox') {
 				$target = $field->getTarget();
 				$target->delete($values, $target->getForeignKey());
 			}
-			if($field->isFile()){
+			if ($field->isFile()) {
 				// Attempt to delete the file
 				$records = $this->fetchIds($values);
-				foreach ($records as $record){
+				foreach ($records as $record) {
 					$filename = $field->getUploadDir() . '/' . $record->{$field->getName()};
-					if(file_exists($filename)){
-						if(unlink($filename)){
+					if (file_exists($filename)) {
+						if (unlink($filename)) {
 							// Then attempt to delete container directory
 							$path = pathinfo($filename, PATHINFO_DIRNAME);
 							@rmdir($path);
-						}else{
+						} else {
 							$this->addFlashMessage("The file $filename could not be deleted from filsystem");
 						}
 					}
 				}
 			}
 		}
-		if(!$key){
+		if (!$key) {
 			$key = $this->getPrimaryKey();
 		}
-		if($this->isOrdered()){
+		if ($this->isOrdered()) {
 			$result = $this->fetchIds($values);
-			foreach($result as $row){
+			foreach ($result as $row) {
 				$ordered[] = $row->{$this->ordered['field']};
 			}
 			rsort($ordered);
-			foreach($ordered as $rowOrder){
-				$bind = array();
+			foreach ($ordered as $rowOrder) {
+				$bind = [];
 				$sql = "UPDATE `{$this->getTableName()}`
 				SET `{$this->ordered['field']}` = `{$this->ordered['field']}` -1
 				WHERE `{$this->ordered['field']}` > $rowOrder";
-				if($this->isCategorized()){
+				if ($this->isCategorized()) {
 					$sql .= " AND `{$this->categorized['field']}` = ?";
-					$bind = array($row->{$this->categorized['field']});
+					$bind = [$row->{$this->categorized['field']}];
 				}
 				$this->getTable()->getDb()->query($sql, $bind);
 			}
@@ -1051,31 +1051,31 @@ class Entity
 	 */
 	public function getValues($action, $data)
 	{
-		$values = array();
-		foreach($this->getFields() as $field){
+		$values = [];
+		foreach ($this->getFields() as $field) {
 			$fieldType = $field->getType();
-			if($field->table != $this->table){
+			if ($field->table != $this->table) {
 				$callbackValues = isset($data[$field->getName()]) ? $data[$field->getName()] : null;
-				$this->callbacks[] = array('field' => $field, 'values' => $callbackValues);
+				$this->callbacks[] = ['field' => $field, 'values' => $callbackValues];
 				continue;
 			}
 			switch ($fieldType) {
 				case 'file':
 				case 'image':
 					$file = $data['$_FILES'][$field->getName()];
-					if(!$file['error'] && $file['size']){
+					if (!$file['error'] && $file['size']) {
 						$dir = substr(md5(uniqid($file['tmp_name'])), 0, 16);
 						$path = $field->getUploadDir() . "/$dir";
 						$cleanName = preg_replace('/[^a-z0-9_\-\.]/i', '-', $file['name']);
-						if(!is_dir($path)){
-							if(!mkdir($path, 0777, 1)){
+						if (!is_dir($path)) {
+							if (!mkdir($path, 0777, 1)) {
 								$this->addMessage("Directory $path could not be created", self::ERROR);
 								$this->abort = true;
 								return false;
 							}
 						}
 						$destination = "$path/$cleanName";
-						if(!move_uploaded_file($file['tmp_name'], $destination)){
+						if (!move_uploaded_file($file['tmp_name'], $destination)) {
 							$this->addMessage("Uploaded file could not be moved to $destination", self::ERROR);
 							$this->abort = true;
 							return false;
@@ -1085,7 +1085,7 @@ class Entity
 					break;
 				case 'dbCheckbox':
 					$callbackValues = isset($data[$field->getName()]) ? $data[$field->getName()] : null;
-					$this->callbacks[] = array('field' => $field, 'values' => $callbackValues);
+					$this->callbacks[] = ['field' => $field, 'values' => $callbackValues];
 					break;
 				case 'date':
 				case 'time':
@@ -1097,14 +1097,14 @@ class Entity
 					$dateValue = $isDate && is_array($value) ? str_pad($value['y'], 4, '0', STR_PAD_LEFT).'-'.str_pad($value['m'], 2, '0', STR_PAD_LEFT).'-'.str_pad($value['d'], 2, '0', STR_PAD_LEFT) : '';
 					$timeValue = $isTime && is_array($value) ? str_pad($value['h'], 2, '0', STR_PAD_LEFT).':'.str_pad($value['min'], 2, '0', STR_PAD_LEFT).'-'.str_pad($second, 2, '0', STR_PAD_LEFT) : '';
 					// Is time
-					if($isTime) $dateTimeValue = $timeValue;
+					if ($isTime) $dateTimeValue = $timeValue;
 					// Is Date
-					if($isDate){
+					if ($isDate) {
 						$dateTimeValue = $dateValue;
 						// Is Date-Time
-						if($isTime) $dateTimeValue .= " $timeValue";
+						if ($isTime) $dateTimeValue .= " $timeValue";
 					}
-					if(strpos($dateTimeValue, '0000-00-00') !== false){
+					if (strpos($dateTimeValue, '0000-00-00') !== false) {
 						$dateTimeValue = null;
 					}
 					$values[$field->getName()] = is_array($value) ? $dateTimeValue : $value;
@@ -1163,7 +1163,7 @@ class Entity
 	public function getPostValues($action)
 	{
 		$entityName = $this->getCleanName();
-		$data = isset($_POST["{$action}_$entityName"]) ? $_POST["{$action}_$entityName"] : array();
+		$data = isset($_POST["{$action}_$entityName"]) ? $_POST["{$action}_$entityName"] : [];
 		return $this->arrangeFilesData($data, "{$action}_$entityName");
 	}
 	
@@ -1175,10 +1175,10 @@ class Entity
 	 */
 	protected function arrangeFilesData($data, $action)
 	{
-		if(isset($_FILES[$action])){
-			foreach($_FILES[$action]['name'] as $entityId => $values){
-				foreach($_FILES[$action]['error'][$entityId] as $key => $error){
-					if($error && $error != UPLOAD_ERR_NO_FILE){
+		if (isset($_FILES[$action])) {
+			foreach ($_FILES[$action]['name'] as $entityId => $values) {
+				foreach ($_FILES[$action]['error'][$entityId] as $key => $error) {
+					if ($error && $error != UPLOAD_ERR_NO_FILE) {
 						$this->addMessage($this->getUploadError($error), self::ERROR);
 					}
 					$data[$entityId]['$_FILES'][$key] = array(

@@ -56,7 +56,7 @@ class Translator
 		$filename = in_array($domain, $libraries) ? 
 			LIB_PATH."/languages/$domain/$this->lang.php" :
 			APPLICATION_PATH."/languages/$this->lang.php";
-		if(file_exists($filename)){
+		if (file_exists($filename)) {
 			$texts = include $filename;
 			$this->texts[$domain] = $texts;
 		}

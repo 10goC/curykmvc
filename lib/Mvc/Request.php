@@ -33,9 +33,9 @@ class Request
 	 */
 	public function getParts()
 	{
-		if($this->parts === null){
+		if ($this->parts === null) {
 			$request = $_SERVER['REQUEST_URI'];
-			if(strpos($request, '?')){
+			if (strpos($request, '?')) {
 				$request = strstr($request, '?', 1);
 			}
 			
@@ -44,31 +44,31 @@ class Request
 			} catch (\Exception $e) {
 				$basepath = '';
 			}
-			if($basepath){
+			if ($basepath) {
 				$request = preg_replace("#^$basepath#", '', $request);
 			}
 			
 			$parts = explode('/', trim($request, '/'));
 			
 			// Add index for empty controller name
-			if(empty($parts[0])){
+			if (empty($parts[0])) {
 				$parts[0] = 'index';
 			}
 			// Add index for empty action name
-			if(empty($parts[1])){
+			if (empty($parts[1])) {
 				$parts[1] = 'index';
 			}
-			if(!empty($_SERVER['QUERY_STRING'])){
+			if (!empty($_SERVER['QUERY_STRING'])) {
 				parse_str($_SERVER['QUERY_STRING'], $qs);
-				foreach($qs as $key => $value){
+				foreach ($qs as $key => $value) {
 					$parts[] = $key;
 					$parts[] = $value;
 				}
 			}
 			
 			// Remove html extension
-			if(strpos($parts[0], '.html')) $parts[0] = substr($parts[0], 0, -5);
-			if(strpos($parts[1], '.html')) $parts[1] = substr($parts[1], 0, -5);
+			if (strpos($parts[0], '.html')) $parts[0] = substr($parts[0], 0, -5);
+			if (strpos($parts[1], '.html')) $parts[1] = substr($parts[1], 0, -5);
 			$this->parts = $parts;
 		}
 		return $this->parts;

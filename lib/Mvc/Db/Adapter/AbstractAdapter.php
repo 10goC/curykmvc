@@ -24,10 +24,10 @@ abstract class AbstractAdapter implements AdapterInterface
 	 * (non-PHPdoc)
 	 * @see \Mvc\Db\Adapter\AdapterInterface::query()
 	 */
-	public function query($sql, $bind = array())
+	public function query($sql, $bind = [])
 	{
 		// prepare and execute the statement with profiling
-		if($stmt = $this->prepare($sql)){
+		if ($stmt = $this->prepare($sql)) {
 			$stmt->execute((array) $bind);
 		}
 	
@@ -48,8 +48,8 @@ abstract class AbstractAdapter implements AdapterInterface
 	 * Retrieve database connection object
 	 * @return object
 	 */
-	public function getDb(){
-		if(!$this->db){
+	public function getDb() {
+		if (!$this->db) {
 			$this->setDb();
 		}
 		return $this->db;

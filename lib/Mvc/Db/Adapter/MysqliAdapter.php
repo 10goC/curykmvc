@@ -26,9 +26,9 @@ class MysqliAdapter extends AbstractAdapter
 			$this->getConfig()->pass,
 			$this->getConfig()->name
 		);
-		if($this->db->connect_error){
+		if ($this->db->connect_error) {
 			throw new \Exception($this->db->connect_error);
-		}else{
+		} else {
 			$this->db->query("SET NAMES 'utf8'");
 		}
 	}
@@ -41,10 +41,10 @@ class MysqliAdapter extends AbstractAdapter
 	 */
 	public function prepare($sql)
 	{
-		if($this->getDb()->connect_error){
+		if ($this->getDb()->connect_error) {
 			return false;
 		}
-		if($this->stmt){
+		if ($this->stmt) {
 			$this->stmt->close();
 		}
 		

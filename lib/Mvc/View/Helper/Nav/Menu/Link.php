@@ -87,7 +87,7 @@ class Link extends Menu
 		$this->linkCount = $link->count();
 		$this->url = property_exists($link->attributes(), 'url') ? $url : $this->cleanUrl($txt);
 		$this->id = $this->cleanUrl($txt);
-		foreach($link->attributes() as $attr => $value){
+		foreach ($link->attributes() as $attr => $value) {
 			$this->$attr = (string) $value;
 		}
 		// set <a> HREF
@@ -102,13 +102,13 @@ class Link extends Menu
 	 */
 	public function isActive()
 	{
-		if($this->active) return true;
+		if ($this->active) return true;
 		// false if external link
-		if(preg_match('#^http[s]?://#i', $this->url)) return false;
+		if (preg_match('#^http[s]?://#i', $this->url)) return false;
 		$request = $this->getRequest();
 		
 		// check against request string
-		if($request == $this->prefix.$this->url) return true;
+		if ($request == $this->prefix.$this->url) return true;
 	}
 
 	/**
@@ -117,12 +117,12 @@ class Link extends Menu
 	 * @param SimpleXMLElement $link
 	 * @return string
 	 */
-	private function _renderLiAnchorHref($link){
+	private function _renderLiAnchorHref($link) {
 		$url = property_exists($link->attributes(), 'url') ?
 			(string) $link->attributes()->url :
 			$this->cleanUrl($this->txt)
 		;
-		if(preg_match('#^http[s]?://#i', $url)) return $url;
+		if (preg_match('#^http[s]?://#i', $url)) return $url;
 		return $this->getView()->baseUrl($this->prefix . $url);
 	}
 
@@ -134,12 +134,12 @@ class Link extends Menu
 	{
 		// print <A>
 		$out = '<a';
-		if($this->linkCount){
+		if ($this->linkCount) {
 			$out .= ' class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"';
 		}
 		$txt = method_exists($this->getView(), '__') ? $this->getView()->__($this->txt) : $this->txt;
-		if($this->href)   $out .= ' href="'.$this->href.'"';
-		if($this->target) $out .= ' target="'.$this->target.'"';
+		if ($this->href)   $out .= ' href="'.$this->href.'"';
+		if ($this->target) $out .= ' target="'.$this->target.'"';
 		return $out.'>'.$txt;
 	}
 	
@@ -171,7 +171,7 @@ class Link extends Menu
 		} catch (\Exception $e) {
 			$basepath = '';
 		}
-		if($basepath){
+		if ($basepath) {
 			// Remove Basepath
 			$request = preg_replace("#^$basepath#", '', $request);
 		}
@@ -189,7 +189,7 @@ class Link extends Menu
 	public function getView()
 	{
 		$item = $this;
-		while(!$item->view){
+		while(!$item->view) {
 			$item = $item->parent;
 		}
 		return $item->view;

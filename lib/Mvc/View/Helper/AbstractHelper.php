@@ -18,7 +18,7 @@ abstract class AbstractHelper
 	 * An optional array of arguments
 	 * @var array
 	 */
-	protected $args = array();
+	protected $args = [];
 	
 	/**
 	 * Receive View object and optional arguments

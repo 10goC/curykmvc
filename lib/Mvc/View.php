@@ -75,24 +75,24 @@ class View
 	public function render(Controller $controller)
 	{
 		extract(get_object_vars($this));
-		if($template = $controller->getTemplate()){
+		if ($template = $controller->getTemplate()) {
 			$templateUrl = APPLICATION_PATH . "/view/$template.phtml";
-			if(file_exists($templateUrl)){
+			if (file_exists($templateUrl)) {
 				ob_start();
 				include( $templateUrl );
 				$this->content = ob_get_clean();
-			}else{
+			} else {
 				throw new \Exception("Template $template not found", 404);
 			}
 		}
-		if($layout = $controller->getLayout()){
+		if ($layout = $controller->getLayout()) {
 			$layoutUrl = APPLICATION_PATH . "/view/layout/$layout.phtml";
-			if(file_exists($layoutUrl)){
+			if (file_exists($layoutUrl)) {
 				include( $layoutUrl );
-			}else{
+			} else {
 				throw new \Exception("Layout $layout not found", 404);
 			}
-		}else{
+		} else {
 			echo $this->content;
 		}
 	}
@@ -201,8 +201,8 @@ class View
 	 */
 	public function renderMessages($messages)
 	{
-		$out = array();
-		foreach($messages as $type => $message){
+		$out = [];
+		foreach ($messages as $type => $message) {
 			$out[] = "<$this->messagesOuterTag class=\"$this->messagesOuterClass $type\">
 			<$this->messagesInnerTag class=\"$this->messagesInnerClass\">".
 			implode("</$this->messagesInnerTag>
@@ -222,13 +222,13 @@ class View
 	{
 		$out = '';
 		$filename = APPLICATION_PATH . '/view/' . $partial . '.phtml';
-		if(is_file($filename)){
+		if (is_file($filename)) {
 			ob_start();
 			extract(get_object_vars($this));
 			include $filename;
-			if($layout){
+			if ($layout) {
 				$layoutFilename = APPLICATION_PATH . '/view/layout/' . $layout . '.phtml';
-				if(is_file($layoutFilename)){
+				if (is_file($layoutFilename)) {
 					$this->content = ob_get_clean();
 					ob_start();
 					include $layoutFilename;

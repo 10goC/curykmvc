@@ -48,7 +48,7 @@ class Controller
 	 * A container for controller messages.
 	 * @var array
 	 */
-	protected $messages = array();
+	protected $messages = [];
 	
 	/**
 	 * The current language
@@ -74,8 +74,8 @@ class Controller
 		$this->translator = new Translator($this);
 		
 		$session = &$this->getSession(self::FLASH_MESSAGES);
-		foreach($session as $type => $messages){
-			foreach($messages as $message){
+		foreach ($session as $type => $messages) {
+			foreach ($messages as $message) {
 				$this->addMessage($message, $type);
 			}
 			unset($session[$type]);
@@ -187,12 +187,12 @@ class Controller
 	 */
 	public function &getSession($section = null)
 	{
-		if(!isset($_SESSION)){
+		if (!isset($_SESSION)) {
 			@session_start();
 		}
-		if($section){
-			if(!isset($_SESSION[$section])){
-				$_SESSION[$section] = array();
+		if ($section) {
+			if (!isset($_SESSION[$section])) {
+				$_SESSION[$section] = [];
 			}
 			return $_SESSION[$section];
 		}
@@ -241,7 +241,7 @@ class Controller
 	 */
 	public function addMessage($message, $type = self::NOTICE)
 	{
-		if(!isset($this->messages[$type])) $this->messages[$type] = array();
+		if (!isset($this->messages[$type])) $this->messages[$type] = [];
 		array_push($this->messages[$type], $message);
 	}
 	

@@ -16,14 +16,14 @@ class Resultset extends \ArrayObject
 	 * The array of rows in the resultset.
 	 * @var array
 	 */
-	protected $rows = array();
+	protected $rows = [];
 	
 	/**
 	 * Store Table element that generated the query. 
 	 * @param Mvc\Db\Table $table
 	 * @param array $array the array of rows in the resultset
 	 */
-	public function __construct(Table $table, $array = array())
+	public function __construct(Table $table, $array = [])
 	{
 		$this->table = $table;
 		parent::__construct($array);
@@ -44,8 +44,8 @@ class Resultset extends \ArrayObject
 	 */
 	public function toArray()
 	{
-		$dataArray = array();
-		foreach($this->rows as $row){
+		$dataArray = [];
+		foreach ($this->rows as $row) {
 			$dataArray[] = $row->getData();
 		}
 		return $dataArray;

@@ -268,7 +268,7 @@ class Transport
      * Options array passed to stream_context_create when connecting via SMTP.
      * @type array
      */
-    public $SMTPOptions = array();
+    public $SMTPOptions = [];
 
     /**
      * SMTP username.
@@ -360,7 +360,7 @@ class Transport
      * @type array
      * @TODO This should really not be public
      */
-    public $SingleToArray = array();
+    public $SingleToArray = [];
 
     /**
      * Whether to generate VERP addresses on send.
@@ -457,28 +457,28 @@ class Transport
      * @type array
      * @access protected
      */
-    protected $to = array();
+    protected $to = [];
 
     /**
      * The array of 'cc' addresses.
      * @type array
      * @access protected
      */
-    protected $cc = array();
+    protected $cc = [];
 
     /**
      * The array of 'bcc' addresses.
      * @type array
      * @access protected
      */
-    protected $bcc = array();
+    protected $bcc = [];
 
     /**
      * The array of reply-to names and addresses.
      * @type array
      * @access protected
      */
-    protected $ReplyTo = array();
+    protected $ReplyTo = [];
 
     /**
      * An array of all kinds of addresses.
@@ -486,21 +486,21 @@ class Transport
      * @type array
      * @access protected
      */
-    protected $all_recipients = array();
+    protected $all_recipients = [];
 
     /**
      * The array of attachments.
      * @type array
      * @access protected
      */
-    protected $attachment = array();
+    protected $attachment = [];
 
     /**
      * The array of custom headers.
      * @type array
      * @access protected
      */
-    protected $CustomHeader = array();
+    protected $CustomHeader = [];
 
     /**
      * The most recent Message-ID (including angular brackets).
@@ -521,14 +521,14 @@ class Transport
      * @type array
      * @access protected
      */
-    protected $boundary = array();
+    protected $boundary = [];
 
     /**
      * The array of available languages.
      * @type array
      * @access protected
      */
-    protected $language = array();
+    protected $language = [];
 
     /**
      * The number of errors encountered.
@@ -668,7 +668,7 @@ class Transport
             return;
         }
         //Avoid clash with built-in function names
-        if (!in_array($this->Debugoutput, array('error_log', 'html', 'echo')) and is_callable($this->Debugoutput)) {
+        if (!in_array($this->Debugoutput, ['error_log', 'html', 'echo']) and is_callable($this->Debugoutput)) {
             call_user_func($this->Debugoutput, $str, $this->SMTPDebug);
             return;
         }
@@ -840,13 +840,13 @@ class Transport
         }
         if ($kind != 'Reply-To') {
             if (!isset($this->all_recipients[strtolower($address)])) {
-                array_push($this->$kind, array($address, $name));
+                array_push($this->$kind, [$address, $name]);
                 $this->all_recipients[strtolower($address)] = true;
                 return true;
             }
         } else {
             if (!array_key_exists(strtolower($address), $this->ReplyTo)) {
-                $this->ReplyTo[strtolower($address)] = array($address, $name);
+                $this->ReplyTo[strtolower($address)] = [$address, $name];
                 return true;
             }
         }
@@ -942,30 +942,30 @@ class Transport
                  * Feel free to use and redistribute this code. But please keep this copyright notice.
                  */
                 return (boolean)preg_match(
-                    '/^(?!(?>(?1)"?(?>\\\[ -~]|[^"])"?(?1)){255,})(?!(?>(?1)"?(?>\\\[ -~]|[^"])"?(?1)){65,}@)' .
+                    '/^(?!(?>(?1)"?(?>\\\[ -~]|[^"])"?(?1)) {255,})(?!(?>(?1)"?(?>\\\[ -~]|[^"])"?(?1)) {65,}@)' .
                     '((?>(?>(?>((?>(?>(?>\x0D\x0A)?[\t ])+|(?>[\t ]*\x0D\x0A)?[\t ]+)?)(\((?>(?2)' .
                     '(?>[\x01-\x08\x0B\x0C\x0E-\'*-\[\]-\x7F]|\\\[\x00-\x7F]|(?3)))*(?2)\)))+(?2))|(?2))?)' .
                     '([!#-\'*+\/-9=?^-~-]+|"(?>(?2)(?>[\x01-\x08\x0B\x0C\x0E-!#-\[\]-\x7F]|\\\[\x00-\x7F]))*' .
                     '(?2)")(?>(?1)\.(?1)(?4))*(?1)@(?!(?1)[a-z0-9-]{64,})(?1)(?>([a-z0-9](?>[a-z0-9-]*[a-z0-9])?)' .
-                    '(?>(?1)\.(?!(?1)[a-z0-9-]{64,})(?1)(?5)){0,126}|\[(?:(?>IPv6:(?>([a-f0-9]{1,4})(?>:(?6)){7}' .
-                    '|(?!(?:.*[a-f0-9][:\]]){8,})((?6)(?>:(?6)){0,6})?::(?7)?))|(?>(?>IPv6:(?>(?6)(?>:(?6)){5}:' .
-                    '|(?!(?:.*[a-f0-9]:){6,})(?8)?::(?>((?6)(?>:(?6)){0,4}):)?))?(25[0-5]|2[0-4][0-9]|1[0-9]{2}' .
-                    '|[1-9]?[0-9])(?>\.(?9)){3}))\])(?1)$/isD',
+                    '(?>(?1)\.(?!(?1)[a-z0-9-]{64,})(?1)(?5)) {0,126}|\[(?:(?>IPv6:(?>([a-f0-9]{1,4})(?>:(?6)) {7}' .
+                    '|(?!(?:.*[a-f0-9][:\]]) {8,})((?6)(?>:(?6)) {0,6})?::(?7)?))|(?>(?>IPv6:(?>(?6)(?>:(?6)) {5}:' .
+                    '|(?!(?:.*[a-f0-9]:) {6,})(?8)?::(?>((?6)(?>:(?6)) {0,4}):)?))?(25[0-5]|2[0-4][0-9]|1[0-9]{2}' .
+                    '|[1-9]?[0-9])(?>\.(?9)) {3}))\])(?1)$/isD',
                     $address
                 );
             case 'pcre':
                 //An older regex that doesn't need a recent PCRE
                 return (boolean)preg_match(
-                    '/^(?!(?>"?(?>\\\[ -~]|[^"])"?){255,})(?!(?>"?(?>\\\[ -~]|[^"])"?){65,}@)(?>' .
+                    '/^(?!(?>"?(?>\\\[ -~]|[^"])"?) {255,})(?!(?>"?(?>\\\[ -~]|[^"])"?) {65,}@)(?>' .
                     '[!#-\'*+\/-9=?^-~-]+|"(?>(?>[\x01-\x08\x0B\x0C\x0E-!#-\[\]-\x7F]|\\\[\x00-\xFF]))*")' .
                     '(?>\.(?>[!#-\'*+\/-9=?^-~-]+|"(?>(?>[\x01-\x08\x0B\x0C\x0E-!#-\[\]-\x7F]|\\\[\x00-\xFF]))*"))*' .
                     '@(?>(?![a-z0-9-]{64,})(?>[a-z0-9](?>[a-z0-9-]*[a-z0-9])?)(?>\.(?![a-z0-9-]{64,})' .
-                    '(?>[a-z0-9](?>[a-z0-9-]*[a-z0-9])?)){0,126}|\[(?:(?>IPv6:(?>(?>[a-f0-9]{1,4})(?>:' .
-                    '[a-f0-9]{1,4}){7}|(?!(?:.*[a-f0-9][:\]]){8,})(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}){0,6})?' .
-                    '::(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}){0,6})?))|(?>(?>IPv6:(?>[a-f0-9]{1,4}(?>:' .
-                    '[a-f0-9]{1,4}){5}:|(?!(?:.*[a-f0-9]:){6,})(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}){0,4})?' .
-                    '::(?>(?:[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}){0,4}):)?))?(?>25[0-5]|2[0-4][0-9]|1[0-9]{2}' .
-                    '|[1-9]?[0-9])(?>\.(?>25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}))\])$/isD',
+                    '(?>[a-z0-9](?>[a-z0-9-]*[a-z0-9])?)) {0,126}|\[(?:(?>IPv6:(?>(?>[a-f0-9]{1,4})(?>:' .
+                    '[a-f0-9]{1,4}) {7}|(?!(?:.*[a-f0-9][:\]]) {8,})(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}) {0,6})?' .
+                    '::(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}) {0,6})?))|(?>(?>IPv6:(?>[a-f0-9]{1,4}(?>:' .
+                    '[a-f0-9]{1,4}) {5}:|(?!(?:.*[a-f0-9]:) {6,})(?>[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}) {0,4})?' .
+                    '::(?>(?:[a-f0-9]{1,4}(?>:[a-f0-9]{1,4}) {0,4}):)?))?(?>25[0-5]|2[0-4][0-9]|1[0-9]{2}' .
+                    '|[1-9]?[0-9])(?>\.(?>25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])) {3}))\])$/isD',
                     $address
                 );
             case 'html5':
@@ -1154,7 +1154,7 @@ class Transport
                 $result = pclose($mail);
                 $this->doCallback(
                     ($result == 0),
-                    array($toAddr),
+                    [$toAddr],
                     $this->cc,
                     $this->bcc,
                     $this->Subject,
@@ -1191,7 +1191,7 @@ class Transport
      */
     protected function mailSend($header, $body)
     {
-        $toArr = array();
+        $toArr = [];
         foreach ($this->to as $toaddr) {
             $toArr[] = $this->addrFormat($toaddr);
         }
@@ -1210,7 +1210,7 @@ class Transport
         if ($this->SingleTo && count($toArr) > 1) {
             foreach ($toArr as $toAddr) {
                 $result = $this->mailPassthru($toAddr, $this->Subject, $body, $header, $params);
-                $this->doCallback($result, array($toAddr), $this->cc, $this->bcc, $this->Subject, $body, $this->From);
+                $this->doCallback($result, [$toAddr], $this->cc, $this->bcc, $this->Subject, $body, $this->From);
             }
         } else {
             $result = $this->mailPassthru($to, $this->Subject, $body, $header, $params);
@@ -1252,7 +1252,7 @@ class Transport
      */
     protected function smtpSend($header, $body)
     {
-        $bad_rcpt = array();
+        $bad_rcpt = [];
         if (!$this->smtpConnect($this->SMTPOptions)) {
             throw new PHPMailerException($this->lang('smtp_connect_failed'), self::STOP_CRITICAL);
         }
@@ -1271,12 +1271,12 @@ class Transport
             foreach ($togroup as $to) {
                 if (!$this->smtp->recipient($to[0])) {
                     $error = $this->smtp->getError();
-                    $bad_rcpt[] = array('to' => $to[0], 'error' => $error['detail']);
+                    $bad_rcpt[] = ['to' => $to[0], 'error' => $error['detail']];
                     $isSent = false;
                 } else {
                     $isSent = true;
                 }
-                $this->doCallback($isSent, array($to[0]), array(), array(), $this->Subject, $body, $this->From);
+                $this->doCallback($isSent, [$to[0]], [], [], $this->Subject, $body, $this->From);
             }
         }
 
@@ -1313,7 +1313,7 @@ class Transport
      * @throws PHPMailerException
      * @return boolean
      */
-    public function smtpConnect($options = array())
+    public function smtpConnect($options = [])
     {
         if (is_null($this->smtp)) {
             $this->smtp = $this->getSMTPInstance();
@@ -1332,7 +1332,7 @@ class Transport
         $lastexception = null;
 
         foreach ($hosts as $hostentry) {
-            $hostinfo = array();
+            $hostinfo = [];
             if (!preg_match('/^((ssl|tls):\/\/)*([a-zA-Z0-9\.-]*):?([0-9]*)$/', trim($hostentry), $hostinfo)) {
                 // Not a valid host entry
                 continue;
@@ -1505,12 +1505,12 @@ class Transport
      * @param array $addr An array of recipient,
      * where each recipient is a 2-element indexed array with element 0 containing an address
      * and element 1 containing a name, like:
-     * array(array('joe@example.com', 'Joe User'), array('zoe@example.com', 'Zoe User'))
+     * array(array('joe@example.com', 'Joe User'), ['zoe@example.com', 'Zoe User'])
      * @return string
      */
     public function addrAppend($type, $addr)
     {
-        $addresses = array();
+        $addresses = [];
         foreach ($addr as $address) {
             $addresses[] = $this->addrFormat($address);
         }
@@ -1521,7 +1521,7 @@ class Transport
      * Format an address for use in a message header.
      * @access public
      * @param array $addr A 2-element indexed array, element 0 containing an address, element 1 containing a name
-     *      like array('joe@example.com', 'Joe User')
+     *      like ['joe@example.com', 'Joe User']
      * @return string
      */
     public function addrFormat($addr)
@@ -2130,7 +2130,7 @@ class Transport
      */
     protected function setMessageType()
     {
-        $type = array();
+        $type = [];
         if ($this->alternativeExists()) {
             $type[] = 'alt';
         }
@@ -2239,9 +2239,9 @@ class Transport
     protected function attachAll($disposition_type, $boundary)
     {
         // Return text of body
-        $mime = array();
-        $cidUniq = array();
-        $incl = array();
+        $mime = [];
+        $cidUniq = [];
+        $incl = [];
 
         // Add all attachments
         foreach ($this->attachment as $attachment) {
@@ -2565,8 +2565,8 @@ class Transport
         }
         // Fall back to a pure PHP implementation
         $string = str_replace(
-            array('%20', '%0D%0A.', '%0D%0A', '%'),
-            array(' ', "\r\n=2E", "\r\n", '='),
+            ['%20', '%0D%0A.', '%0D%0A', '%'],
+            [' ', "\r\n=2E", "\r\n", '='],
             rawurlencode($string)
         );
         $string = preg_replace('/[^\r\n]{' . ($line_max - 3) . '}[^=\r\n]{2}/', "$0=\r\n", $string);
@@ -2622,7 +2622,7 @@ class Transport
                 $pattern = '\000-\011\013\014\016-\037\075\077\137\177-\377' . $pattern;
                 break;
         }
-        $matches = array();
+        $matches = [];
         if (preg_match_all("/[{$pattern}]/", $encoded, $matches)) {
             // If the string contains an '=', make sure it's the first thing we replace
             // so as to avoid double-encoding
@@ -2810,7 +2810,7 @@ class Transport
         foreach ($this->to as $to) {
             unset($this->all_recipients[strtolower($to[0])]);
         }
-        $this->to = array();
+        $this->to = [];
     }
 
     /**
@@ -2822,7 +2822,7 @@ class Transport
         foreach ($this->cc as $cc) {
             unset($this->all_recipients[strtolower($cc[0])]);
         }
-        $this->cc = array();
+        $this->cc = [];
     }
 
     /**
@@ -2834,7 +2834,7 @@ class Transport
         foreach ($this->bcc as $bcc) {
             unset($this->all_recipients[strtolower($bcc[0])]);
         }
-        $this->bcc = array();
+        $this->bcc = [];
     }
 
     /**
@@ -2843,7 +2843,7 @@ class Transport
      */
     public function clearReplyTos()
     {
-        $this->ReplyTo = array();
+        $this->ReplyTo = [];
     }
 
     /**
@@ -2852,10 +2852,10 @@ class Transport
      */
     public function clearAllRecipients()
     {
-        $this->to = array();
-        $this->cc = array();
-        $this->bcc = array();
-        $this->all_recipients = array();
+        $this->to = [];
+        $this->cc = [];
+        $this->bcc = [];
+        $this->all_recipients = [];
     }
 
     /**
@@ -2864,7 +2864,7 @@ class Transport
      */
     public function clearAttachments()
     {
-        $this->attachment = array();
+        $this->attachment = [];
     }
 
     /**
@@ -2873,7 +2873,7 @@ class Transport
      */
     public function clearCustomHeaders()
     {
-        $this->CustomHeader = array();
+        $this->CustomHeader = [];
     }
 
     /**
@@ -3007,7 +3007,7 @@ class Transport
             // Value passed in as name:value
             $this->CustomHeader[] = explode(':', $name, 2);
         } else {
-            $this->CustomHeader[] = array($name, $value);
+            $this->CustomHeader[] = [$name, $value];
         }
     }
 
@@ -3264,8 +3264,8 @@ class Transport
      */
     public static function mb_pathinfo($path, $options = null)
     {
-        $ret = array('dirname' => '', 'basename' => '', 'extension' => '', 'filename' => '');
-        $pathinfo = array();
+        $ret = ['dirname' => '', 'basename' => '', 'extension' => '', 'filename' => ''];
+        $pathinfo = [];
         if (preg_match('%^(.*?)[\\\\/]*(([^/\\\\]*?)(\.([^\.\\\\/]+?)|))[\\\\/\.]*$%im', $path, $pathinfo)) {
             if (array_key_exists(1, $pathinfo)) {
                 $ret['dirname'] = $pathinfo[1];
@@ -3599,7 +3599,7 @@ class Transport
     protected function doCallback($isSent, $to, $cc, $bcc, $subject, $body, $from)
     {
         if (!empty($this->action_function) && is_callable($this->action_function)) {
-            $params = array($isSent, $to, $cc, $bcc, $subject, $body, $from);
+            $params = [$isSent, $to, $cc, $bcc, $subject, $body, $from];
             call_user_func_array($this->action_function, $params);
         }
     }

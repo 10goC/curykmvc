@@ -34,7 +34,7 @@ class Field
 	 * The field options (for selectable fields)
 	 * @var array
 	 */
-	protected $options = array();
+	protected $options = [];
 	
 	/**
 	 * A text for an empty first option (or false for not including one)
@@ -129,35 +129,35 @@ class Field
 	public function __construct(Entity $entity, $fieldId, $field)
 	{
 		$this->entity = $entity;
-		if(is_numeric($fieldId)){
-			if(is_string($field)){
+		if (is_numeric($fieldId)) {
+			if (is_string($field)) {
 				$this->name = $field;
 				$this->title = $field;
 				$this->setTable($entity->getTable());
 			}
-		}else{
+		} else {
 			$this->name = $fieldId;
 			$this->title = isset($field['title']) ? $field['title']: $fieldId;
 			$table = isset($field['table']) ? $field['table'] : $entity->getTable();
 			$this->setTable($table);
-			if(isset($field['ref'])) $this->ref = $field['ref'];
-			if(isset($field['type'])) $this->type = $field['type'];
-			if(isset($field['options'])) $this->setOptions($field['options']);
-			if(isset($field['source'])) $this->setSource($field['source']);
-			if(isset($field['target'])) $this->setTarget($field['target']);
-			if(isset($field['required'])) $this->required = $field['required'];
-			if(isset($field['placeholder'])) $this->placeholder = $field['placeholder'];
-			if(isset($field['default'])) $this->defaultValue = $field['default'];
-			if(isset($field['dateFieldsOrder'])) $this->dateFieldsOrder = $field['dateFieldsOrder'];
-			if(isset($field['timeFields'])) $this->timeFields = $field['timeFields'];
-			if(isset($field['uploadDir'])) $this->setUploadDir($field['uploadDir']);
-			if(isset($field['uploadUrl'])){
+			if (isset($field['ref'])) $this->ref = $field['ref'];
+			if (isset($field['type'])) $this->type = $field['type'];
+			if (isset($field['options'])) $this->setOptions($field['options']);
+			if (isset($field['source'])) $this->setSource($field['source']);
+			if (isset($field['target'])) $this->setTarget($field['target']);
+			if (isset($field['required'])) $this->required = $field['required'];
+			if (isset($field['placeholder'])) $this->placeholder = $field['placeholder'];
+			if (isset($field['default'])) $this->defaultValue = $field['default'];
+			if (isset($field['dateFieldsOrder'])) $this->dateFieldsOrder = $field['dateFieldsOrder'];
+			if (isset($field['timeFields'])) $this->timeFields = $field['timeFields'];
+			if (isset($field['uploadDir'])) $this->setUploadDir($field['uploadDir']);
+			if (isset($field['uploadUrl'])) {
 				$this->setUploadUrl($field['uploadUrl']);
-				if(!isset($field['uploadDir'])){
+				if (!isset($field['uploadDir'])) {
 					$this->setUploadDir(PUBLIC_PATH . '/' . trim($field['uploadUrl'], '/'));
 				}
 			}
-			if(isset($field['emptyFirstOption'])) $this->emptyFirstOption = $field['emptyFirstOption'];
+			if (isset($field['emptyFirstOption'])) $this->emptyFirstOption = $field['emptyFirstOption'];
 		}
 	}
 	
@@ -213,16 +213,16 @@ class Field
 	 */
 	public function setTable($table)
 	{
-		if(is_object($table)){
-			if($table instanceof Table){
+		if (is_object($table)) {
+			if ($table instanceof Table) {
 				$this->table = $table;
-			}else{
+			} else {
 				throw new \Exception('Field table must extend Mvc\Db\Table');
 			}
-		}else{
+		} else {
 			$table = (string) $table;
 			try {
-				if(class_exists($table)){
+				if (class_exists($table)) {
 					$tableObject = new $table($this->getEntity()->getController());
 				}
 			} catch (\Exception $e) {
@@ -239,7 +239,7 @@ class Field
 	 */
 	public function isFile()
 	{
-		return in_array($this->type, array('file', 'image'));
+		return in_array($this->type, ['file', 'image']);
 	}
 	
 	/**
@@ -257,9 +257,9 @@ class Field
 	 */
 	public function setSource($entity)
 	{
-		if(is_string($entity)){
+		if (is_string($entity)) {
 			$this->source = new $entity($this->entity->getController());
-		}else if($entity instanceof Entity){
+		}else if ($entity instanceof Entity) {
 			$this->source = $entity;
 		}
 	}
@@ -279,9 +279,9 @@ class Field
 	 */
 	public function setTarget($target)
 	{
-		if(is_string($target)){
+		if (is_string($target)) {
 			$this->target = new $target($this);
-		}else if($target instanceof Target){
+		}else if ($target instanceof Target) {
 			$this->target = $target;
 		}
 	}
@@ -301,7 +301,7 @@ class Field
 	 */
 	public function getOptions()
 	{
-		if(!$this->options && in_array($this->type, array('dbSelect', 'dbCheckbox')) && $this->source){
+		if (!$this->options && in_array($this->type, ['dbSelect', 'dbCheckbox']) && $this->source) {
 			$this->options = $this->source->fetchArray();
 		}
 		return $this->options;
@@ -313,7 +313,7 @@ class Field
 	 */
 	public function getUploadDir()
 	{
-		if(!$this->uploadDir){
+		if (!$this->uploadDir) {
 			$this->uploadDir = PUBLIC_PATH . '/uploads';
 		}
 		return $this->uploadDir;
@@ -334,7 +334,7 @@ class Field
 	 */
 	public function getUploadUrl()
 	{
-		if(!$this->uploadUrl){
+		if (!$this->uploadUrl) {
 			$this->uploadUrl = '/uploads';
 		}
 		$view = $this->getEntity()->getController()->getView();
@@ -363,12 +363,12 @@ class Field
 			case 'dbSelect':
 			case 'select':
 				$source = $this->getOptions();
-				if(isset($source[$value])){
+				if (isset($source[$value])) {
 					$value = $source[$value];
-				}else{
+				} else {
 					// Search within optgroups
-					foreach($source as $option){
-						if(is_array($option) && isset($option[$value])){
+					foreach ($source as $option) {
+						if (is_array($option) && isset($option[$value])) {
 							$value = $option[$value];
 						}
 					}
@@ -387,8 +387,8 @@ class Field
 				
 			// Boolean
 			case 'boolean':
-				$icons = array('times', 'check');
-				if(!$this->getOptions()){
+				$icons = ['times', 'check'];
+				if (!$this->getOptions()) {
 					$this->setOptions(array('Inactive', 'Active'));
 				}
 				$values = $this->getOptions();

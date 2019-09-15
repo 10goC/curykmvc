@@ -86,51 +86,51 @@ class Menu
 	{
 		$this->view = $view;
 		$this->id = $id;
-		if(!is_file(APPLICATION_PATH.'/navigation.xml')){
+		if (!is_file(APPLICATION_PATH.'/navigation.xml')) {
 			throw new \Exception("Navigation menu '$id' not found");
 			return;
 		}
 		$xml = simplexml_load_file(APPLICATION_PATH.'/navigation.xml', 'Mvc\View\Helper\Nav\Menu\Xml');
-		if(!$xml || empty($xml->menu)){
+		if (!$xml || empty($xml->menu)) {
 			throw new \Exception("Navigation menu '$id' is not valid XML");
 			return;
 		}
-		foreach($xml->menu as $xmlMenu){
-			if((string) $xmlMenu->attributes()->id == $id){
+		foreach ($xml->menu as $xmlMenu) {
+			if ((string) $xmlMenu->attributes()->id == $id) {
 				$this->menu = $xmlMenu;
 			}
 		}
-		if(empty($this->menu)){
+		if (empty($this->menu)) {
 			throw new \Exception("Navigation menu '$id' not found in XML map file");
 			return;
 		}
 		$this->linkCount = $this->menu->count();
-		if(property_exists($this->menu->attributes(), 'prefix')) $this->prefix = (string) $this->menu->attributes()->prefix;
+		if (property_exists($this->menu->attributes(), 'prefix')) $this->prefix = (string) $this->menu->attributes()->prefix;
 		$this->attributes = 'id="'.(string) $this->menu->attributes()->id.'"';
-		if(property_exists($this->menu->attributes(), 'class')) $this->attributes .= ' class="'.(string) $this->menu->attributes()->class.'"';
+		if (property_exists($this->menu->attributes(), 'class')) $this->attributes .= ' class="'.(string) $this->menu->attributes()->class.'"';
 	}
 	
 	/**
 	 * Processes the XML page elements
 	 * @param SimpleXMLElement $menu
 	 */
-	private function _processLinks($menu){
+	private function _processLinks($menu) {
 		$linkCount = 1;
-		foreach($menu->page as $link){
+		foreach ($menu->page as $link) {
 	
 			$item = new Link($link, $linkCount, $this->depth+1, $this);
 			
 			$txt = (string) $link->attributes()->txt;
-			if(empty($txt)) continue;
+			if (empty($txt)) continue;
 			
 			$this->links[] = $item;
 			
-			if($item->linkCount) $item->_processLinks($link);
+			if ($item->linkCount) $item->_processLinks($link);
 			
-			if($item->isActive()){
+			if ($item->isActive()) {
 				// mark ancestors as active
 				$parent = $item;
-				while($parent->parent != null){
+				while($parent->parent != null) {
 					$parent = $parent->parent;
 					$parent->active = true;
 				}
@@ -146,11 +146,11 @@ class Menu
 	 */
 	private function _renderLinks()
 	{
-		foreach($this->links as $link){
+		foreach ($this->links as $link) {
 			// set <li> ID
 			$parent = $this;
-			$parentIds = array($this->id);
-			while($parent->parent != null){
+			$parentIds = [$this->id];
+			while($parent->parent != null) {
 				$parentIds[] = $parent->parent->id;
 				$parent = $parent->parent;
 			}
@@ -159,18 +159,18 @@ class Menu
 			
 			// set <li> CLASS
 			$class = 'menu-item level-'.$this->depth;
-			if($link->index == 1)                        $class .= " first";
-			if($link->index == $link->parent->linkCount) $class .= " last";
-			if($link->isActive())                        $class .= " active";
+			if ($link->index == 1)                        $class .= " first";
+			if ($link->index == $link->parent->linkCount) $class .= " last";
+			if ($link->isActive())                        $class .= " active";
 			
 			echo '<li id="'.$id.'" class="'.$class.'">';
 			echo $link->getAnchor();
 			// render sublevels recursively
-			if($link->linkCount){
+			if ($link->linkCount) {
 				echo ' <span class="caret"></span><ul class="dropdown-menu" role="menu"></a>';
 				$link->_renderLinks();
 				echo '</ul>';
-			}else{
+			} else {
 				echo '</a>';
 			}
 			echo '</li>';

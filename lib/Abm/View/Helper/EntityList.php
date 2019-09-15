@@ -33,7 +33,7 @@ class EntityList
 	 * An array of fields to be ommitted from listing
 	 * @var array
 	 */
-	protected $hide = array();
+	protected $hide = [];
 	
 	/**
 	 * The list of items to show
@@ -57,7 +57,7 @@ class EntityList
 	 * Filters for the search query
 	 * @var array
 	 */
-	public $filters = array();
+	public $filters = [];
 	
 	/**
 	 * Receives the injected View and Entity objects and options
@@ -65,14 +65,14 @@ class EntityList
 	 * @param Entity $entity
 	 * @param array $options
 	 */
-	public function __construct(View $view, Entity $entity, $options = array())
+	public function __construct(View $view, Entity $entity, $options = [])
 	{
 		$this->view = $view;
 		$this->entity = $entity;
 		$this->options = $options;
-		if(isset($options['hide'])) $this->hide = $options['hide'];
-		if(isset($options['list'])) $this->list = $options['list'];
-		if(isset($options['filters'])) $this->setFilters($options['filters']);
+		if (isset($options['hide'])) $this->hide = $options['hide'];
+		if (isset($options['list'])) $this->list = $options['list'];
+		if (isset($options['filters'])) $this->setFilters($options['filters']);
 	}
 	
 	/**
@@ -84,14 +84,14 @@ class EntityList
 		$view = $this->view;
 		$entity = $this->entity;
 		$options = $this->options;
-		$out = array();
-		if(!$this->list){
+		$out = [];
+		if (!$this->list) {
 			$where = 1;
-			$bind = array();
-			if($this->filters){
-				foreach($this->filters as $wherePart => $bindPart){
+			$bind = [];
+			if ($this->filters) {
+				foreach ($this->filters as $wherePart => $bindPart) {
 					$whereArray[] = "($wherePart)";
-					if($bindPart){
+					if ($bindPart) {
 						$bind = array_merge($bind, (array) $bindPart);
 					}
 				}
@@ -101,19 +101,19 @@ class EntityList
 		}
 		$actions = isset($options['actions']) ? $options['actions'] : $entity->getActions();
 		// Remove add action
-		if(in_array('add', $actions)){
+		if (in_array('add', $actions)) {
 			unset($actions[array_search('add', $actions)]);
 		}
-		if($this->list && count($this->list)){
+		if ($this->list && count($this->list)) {
 			$out[] = $this->renderPageInfo();
 			$out[] = "<table class=\"$view->listClass\">
 			{$this->entityListHeader($entity, $actions, $options)}
 			{$this->entityListBody($entity, $actions, $options)}
 			</table>";
-		}else{
+		} else {
 			$out[] = '<p>'.$view->__(sprintf($view->__('No %s found', $view::TEXTDOMAIN), $view->__($entity->getPlural()))).'</p>';
 		}
-		if($messages = $entity->getMessages()){
+		if ($messages = $entity->getMessages()) {
 			array_unshift($out, $view->renderMessages($messages));
 			$entity->flushMessages();
 		}
@@ -126,7 +126,7 @@ class EntityList
 	 */
 	public function renderPageInfo()
 	{
-		if($this->entity->getPaginator()){
+		if ($this->entity->getPaginator()) {
 			return str_replace(
 				array('{start}', '{end}', '{total}'),
 				array(
@@ -178,12 +178,12 @@ class EntityList
 	{
 		$out[] = "<thead>
 		<tr>";
-		foreach($entity->getFields() as $field){
-			if(!in_array($field->getName(), $this->hide)){
+		foreach ($entity->getFields() as $field) {
+			if (!in_array($field->getName(), $this->hide)) {
 				$out[] = $this->headerCell($field);
 			}
 		}
-		if(!empty($actions)){
+		if (!empty($actions)) {
 		$colspan = count($actions) > 1 ? 'colspan="'.count($actions).'"' : '';
 				$out[] = "<th $colspan>&nbsp;</th>";
 		}
@@ -213,16 +213,16 @@ class EntityList
 	{
 		$view = $this->view;
 		$out[] = '<tbody>';
-		foreach($this->list as $row){
+		foreach ($this->list as $row) {
 			$out[] = '<tr>';
-			foreach($entity->getFields() as $field){
-				if(!in_array($field->getName(), $this->hide)){
+			foreach ($entity->getFields() as $field) {
+				if (!in_array($field->getName(), $this->hide)) {
 					$value = $row->{$field->getName()};
 					$out[] = $this->bodyCell($field, $row);
 				}
 			}
-			if(!empty($actions)){
-				foreach($actions as $action){
+			if (!empty($actions)) {
+				foreach ($actions as $action) {
 					$out[] = $this->actionCell($action, $entity, $field, $row);
 				}
 			}
@@ -254,7 +254,7 @@ class EntityList
 	public function actionCell($action, Entity $entity, Field $field, Row $row)
 	{
 		$view = $this->view;
-		if($action == 'order') $action = 'move up';
+		if ($action == 'order') $action = 'move up';
 		$param = str_replace(' ', '', "{$action}_{$entity->getCleanName()}");
 		$id = $row->{$entity->getPrimaryKey()};
 		return "<td><a href=\"?$param=$id\">

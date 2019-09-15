@@ -36,11 +36,11 @@ class View extends MvcView
 	 * @param array $options
 	 * @return Abm\View\Helper\EntityAdminForm
 	 */
-	public function entityAdminForm(Entity $entity, $options = array())
+	public function entityAdminForm(Entity $entity, $options = [])
 	{
 		$helperClass = isset($options['helper']) ? $options['helper'] : $this->entityAdminFormHelperClass;
 		$helper = new $helperClass($this, $entity);
-		if(isset($options['legend'])){
+		if (isset($options['legend'])) {
 			$helper->legend = $options['legend'];
 		}
 		return $helper;
@@ -52,11 +52,11 @@ class View extends MvcView
 	 * @param array $options
 	 * @return Abm\View\Helper\EntityList
 	 */
-	public function entityList(Entity $entity, $options = array())
+	public function entityList(Entity $entity, $options = [])
 	{
 		$helperClass = isset($options['helper']) ? $options['helper'] : $this->entityListHelperClass;
 		$helper = new $helperClass($this, $entity, $options);
-		if(isset($options['listClass'])){
+		if (isset($options['listClass'])) {
 			$this->listClass = $options['listClass'];
 		}
 		return $helper;

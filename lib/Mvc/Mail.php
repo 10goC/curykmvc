@@ -68,7 +68,7 @@ class Mail
 	 */
 	protected function initConfig()
 	{
-		if($this->config) return $this->config;
+		if ($this->config) return $this->config;
 		$notificationsConfig = $this->controller->getApplication()->getConfig()->notifications->toArray();
 		$smtp = $notificationsConfig['smtp'];
 		$mail = $notificationsConfig['mail'];
@@ -80,19 +80,19 @@ class Mail
 		
 		$this->transport       = new Transport(true);
 		$this->transport->CharSet = $mail['charset'];
-		if($smtp['host']){
+		if ($smtp['host']) {
 			$this->transport->IsSMTP();
 			$this->transport->Host = $smtp['host'];
 		}
 		// else $this->transport->IsSendmail();
-		if($smtp['sender']) $this->transport->Sender = $smtp['sender'];
-		if($smtp['username'] && $smtp['password']){
+		if ($smtp['sender']) $this->transport->Sender = $smtp['sender'];
+		if ($smtp['username'] && $smtp['password']) {
 			$this->transport->SMTPAuth = true;
 			$this->transport->Username = $smtp['username'];
 			$this->transport->Password = $smtp['password'];
 		}
-		if($smtp['secure']) $this->transport->SMTPSecure = $smtp['secure'];
-		if($smtp['port']) $this->transport->Port = $smtp['port'];
+		if ($smtp['secure']) $this->transport->SMTPSecure = $smtp['secure'];
+		if ($smtp['port']) $this->transport->Port = $smtp['port'];
 	}
 	
 	/**
@@ -105,8 +105,8 @@ class Mail
 	{
 		$this->controller = $controller;
 		$this->initConfig();
-		if(!empty($args['htmlBody'])) $this->htmlBody = utf8_decode($args['htmlBody']);
-		if(!empty($args['textBody'])) $this->textBody = utf8_decode($args['textBody']);
+		if (!empty($args['htmlBody'])) $this->htmlBody = utf8_decode($args['htmlBody']);
+		if (!empty($args['textBody'])) $this->textBody = utf8_decode($args['textBody']);
 		$from      = empty($args['from'])      ? utf8_decode($this->defaultFrom)     : utf8_decode($args['from']);
 		$fromName  = empty($args['fromName'])  ? utf8_decode($this->defaultFromName) : utf8_decode($args['fromName']);
 		$recipient = empty($args['recipient']) ? utf8_decode($this->defaultTo)       : utf8_decode($args['recipient']);
@@ -124,13 +124,13 @@ class Mail
 	 */
 	public function send()
 	{
-		if($this->htmlBody){
+		if ($this->htmlBody) {
 			$this->transport->Body = $this->htmlBody;
 			$this->transport->isHTML(true);
-			if($this->textBody){
+			if ($this->textBody) {
 				$this->transport->AltBody = $this->textBody;
 			}
-		}else{
+		} else {
 			$this->transport->Body = $this->textBody;
 			$this->transport->isHTML(false);
 		}

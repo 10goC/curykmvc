@@ -34,6 +34,6 @@ interface AdapterInterface
 	 * @param  array   $bind An array of data to bind to the placeholders.
 	 * @return Mvc\Db\StatementInterface
 	 */
-	public function query($sql, $bind = array());
+	public function query($sql, $bind = []);
 	
 }

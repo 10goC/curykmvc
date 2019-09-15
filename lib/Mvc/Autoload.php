@@ -48,9 +48,9 @@ class Autoload
 		$filename = in_array($classPart[0], $this->libraries) ?
 		LIB_PATH . str_replace('\\', DIRECTORY_SEPARATOR, "/$class.php") :
 		APPLICATION_PATH . str_replace('\\', DIRECTORY_SEPARATOR, "/$class.php");
-		if(file_exists($filename)){
+		if (file_exists($filename)) {
 			include $filename;
-		}else{
+		} else {
 			$type = strpos($filename, 'Controller.php') ? 'Controller' : 'Class';
 			throw new \Exception("$type $class does not exist");
 		}

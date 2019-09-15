@@ -121,7 +121,7 @@ class POP3
      * @type array
      * @access private
      */
-    private $errors = array();
+    private $errors = [];
 
     /**
      * Line break constant
@@ -182,7 +182,7 @@ class POP3
         $this->username = $username;
         $this->password = $password;
         //  Reset the error log
-        $this->errors = array();
+        $this->errors = [];
         //  connect
         $result = $this->connect($this->host, $this->port, $this->tval);
         if ($result) {

@@ -59,9 +59,9 @@ class Application
 			'controller' => $controllerRequest,
 			'action' => $actionRequest
 		);
-		if(count($requestPart > 2)){
-			for($i = 2; $i < count($requestPart); $i += 2){
-				if(isset($requestPart[$i+1])){
+		if (count($requestPart > 2)) {
+			for ($i = 2; $i < count($requestPart); $i += 2) {
+				if (isset($requestPart[$i + 1])) {
 					$this->request[$requestPart[$i]] = $requestPart[$i + 1];
 				}
 			}
@@ -82,11 +82,11 @@ class Application
 			
 			// Do action
 			$this->controller->init();
-			if(
+			if (
 				!method_exists($this->controller, $action) && 
 				isset($this->request['action']) &&
 				method_exists($this->controller, $this->request['action'] . 'Action')
-			){
+			) {
 				// Allow action to be passed in query string
 				$action = $this->request['action'] . 'Action';
 				$this->controller->setTemplate("$controllerRequest/{$this->request['action']}");
@@ -100,12 +100,12 @@ class Application
 			echo $output;
 		} catch (\Exception $e) {
 			$responseCode = ($e->getCode()) ?: 404;
-			if(function_exists('http_response_code')){
+			if (function_exists('http_response_code')) {
 				http_response_code($responseCode);
-			}else{
+			} else {
 				header($_SERVER['SERVER_PROTOCOL'] . ' ' . $responseCode);
 			}
-			if(!$this->controller){
+			if (!$this->controller) {
 				$this->controller = new \Mvc\Controller\ErrorController($this);
 				// Retry boostrap
 				try {
@@ -130,7 +130,7 @@ class Application
 	 */
 	public function getConfig()
 	{
-		if(!$this->config){
+		if (!$this->config) {
 			$global = include APPLICATION_PATH . '/config.global.php';
 			$local = include APPLICATION_PATH . '/config.local.php';
 			$this->config = new Config(array_merge($global, $local));
@@ -153,7 +153,7 @@ class Application
 	 */
 	public function getDb()
 	{
-		if(!$this->db){
+		if (!$this->db) {
 			$dbConfig = $this->getConfig()->db;
 			$dbAdapterClass = isset($dbConfig->adapter) ?
 				'Mvc\Db\Adapter\\'.ucfirst(strtolower($dbConfig->adapter)).'Adapter' :
@@ -179,7 +179,7 @@ class Application
 	 * @return string
 	 */
 	public function dashesToCamelCase($string, $capitalizeFirstCharacter = false) {
-		return preg_replace_callback("/-[a-zA-Z]/", function($matches){
+		return preg_replace_callback("/-[a-zA-Z]/", function($matches) {
 			return strtoupper($matches[0][1]);
 		}, $string);
 	}

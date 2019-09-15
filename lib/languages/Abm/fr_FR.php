@@ -1,6 +1,6 @@
 <?php
 /** Translation file */
-return array(
+return [
 	"Add" => "Ajouter",
 	"Edit" => "Éditer",
 	"Delete" => "Effacer",
@@ -51,4 +51,4 @@ return array(
 	"November" => "Novembre",
 	"December" => "Décembre",
 	"Showing results {start} to {end} of {total}" => "Résultats {start} à {end} au {total}",
-);
+];

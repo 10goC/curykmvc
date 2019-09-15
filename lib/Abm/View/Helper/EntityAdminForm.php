@@ -38,7 +38,7 @@ class EntityAdminForm
 	 * Database records
 	 * @var array
 	 */
-	protected $records = array();
+	protected $records = [];
 	
 	/**
 	 * A string for the legend HTML tag or a boolean value for determining whether to generate one
@@ -69,25 +69,25 @@ class EntityAdminForm
 		$entity = $this->entity;
 		$view = $this->view;
 		$forms = $this->getForms();
-		foreach($entity->getFields() as $field){
-			if($field->isFile()){
+		foreach ($entity->getFields() as $field) {
+			if ($field->isFile()) {
 				$this->enctype = 'enctype="multipart/form-data"';
 			}
 		}
 		$out[] = '<form '.$this->enctype.' action="" class="'.$entity->getCleanName().'-admin-form" method="post">';
-		foreach($forms as $action => $form){
-			if($action == 'delete'){
+		foreach ($forms as $action => $form) {
+			if ($action == 'delete') {
 				$out[] = '<fieldset>
 					'.$this->getLegend('delete');
 			}
-			foreach($form as $i){
-				if($action == 'delete'){
+			foreach ($form as $i) {
+				if ($action == 'delete') {
 					$out[] = $this->deleteForm($i);
-				}else{
+				} else {
 					$out[] = $this->innerForm($action, $i);
 				}
 			}
-			if($action == 'delete'){
+			if ($action == 'delete') {
 				$out[] = '</fieldset>';
 			}
 		}
@@ -109,7 +109,7 @@ class EntityAdminForm
 	 */
 	public function getLegend($action)
 	{
-		if($this->legend){
+		if ($this->legend) {
 			$view = $this->view;
 			$legend = is_string($this->legend) ? $this->legend : $view->__($view->__(ucwords($action), $view::TEXTDOMAIN).' '.$view->__($this->entity->getName()));
 			return "<legend>$legend</legend>";
@@ -132,7 +132,7 @@ class EntityAdminForm
 		
 		$out[] = '<fieldset>
 			'.$this->getLegend($action);
-		foreach($entity->getFields() as $field){
+		foreach ($entity->getFields() as $field) {
 			$out[] = $this->renderInputField($field, $action, $entityIndex);
 		}
 		$out[] = '</fieldset>';
@@ -149,14 +149,14 @@ class EntityAdminForm
 		$fieldId      = "{$formId}_{$field->getName()}";
 		$fieldType    = $field->getType();
 		$defaultValue = $field->defaultValue;
-		if($action == 'edit' && isset($this->records[$entityIndex])){
+		if ($action == 'edit' && isset($this->records[$entityIndex])) {
 			$defaultValue = $this->records[$entityIndex]->{$field->getName()};
 		}
 		$value = isset($_POST[$fieldName]) ? $_POST[$fieldName] : $defaultValue;
-		if(is_array($value) && $ref){
+		if (is_array($value) && $ref) {
 			$value = isset($value[$ref]) ? $value[$ref] : null;
 		}
-		if($ref){
+		if ($ref) {
 			$fieldName .= "[$ref]";
 			$fieldId   .= "_$ref";
 		}
@@ -178,17 +178,17 @@ class EntityAdminForm
 				$hour   = $date && $isTime ? $datePart[4] : '';
 				$minute = $date && $isTime ? $datePart[5] : '';
 				$second = $date && $isTime ? $datePart[6] : '';
-				$months = array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+				$months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 				$fields['D'] = "<select class=\"form-control day $class\" name=\"{$fieldName}[d]\" id=\"{$fieldId}_d\" $required>
 				<option value=\"\">{$this->view->__('Day', $view::TEXTDOMAIN)}</option>";
-				for($d = 1; $d <= 31; $d++){
+				for ($d = 1; $d <= 31; $d++) {
 				$selected = $day == $d ? 'selected="selected"' : '';
 					$fields['D'] .= "<option value=\"$d\" $selected>$d</option>";
 				}
 				$fields['D'] .= "</select>";
 				$fields['M'] = "<select class=\"form-control month $class\" name=\"{$fieldName}[m]\" id=\"{$fieldId}_m\" $required>
 				<option value=\"\">{$this->view->__('Month', $view::TEXTDOMAIN)}</option>";
-				foreach($months as $m => $monthName){
+				foreach ($months as $m => $monthName) {
 					$mm = $m +1;
 					$selected = $month == $mm ? 'selected="selected"' : '';
 					$fields['M'] .= "<option value=\"$mm\" $selected>{$this->view->__($monthName, $view::TEXTDOMAIN)}</option>";
@@ -198,20 +198,20 @@ class EntityAdminForm
 				$fields['h'] = "<input placeholder=\"{$this->view->__('Hour', $view::TEXTDOMAIN)}\" class=\"form-control hour $class\" type=\"number\" name=\"{$fieldName}[h]\" id=\"{$fieldId}_h\" value=\"$hour\" min=\"0\" max=\"23\" $required>";
 				$fields['m'] = "<input placeholder=\"{$this->view->__('Minute', $view::TEXTDOMAIN)}\" class=\"form-control minute $class\" type=\"number\" name=\"{$fieldName}[min]\" id=\"{$fieldId}_min\" value=\"$minute\" min=\"0\" max=\"59\" $required>";
 				$fields['s'] = "<input placeholder=\"{$this->view->__('Second', $view::TEXTDOMAIN)}\" class=\"form-control second $class\" type=\"number\" name=\"{$fieldName}[s]\" id=\"{$fieldId}_s\" value=\"$second\" min=\"0\" max=\"59\" $required>";
-				if($isDate){
+				if ($isDate) {
 					$out[] = '<div class="date-fields">';
-					foreach(str_split(strtoupper($field->dateFieldsOrder)) as $dateField => $i){
-						if($dateField){
+					foreach (str_split(strtoupper($field->dateFieldsOrder)) as $dateField => $i) {
+						if ($dateField) {
 							$out[] = '<span class="separator"></span>';
 						}
 						$out[] = $fields[$i];
 					}
 					$out[] = '</div>';
 				}
-				if($isTime){
+				if ($isTime) {
 					$out[] = '<div class="time-fields">';
-					foreach(str_split(strtolower($field->timeFields)) as $timeField => $i){
-						if($timeField){
+					foreach (str_split(strtolower($field->timeFields)) as $timeField => $i) {
+						if ($timeField) {
 							$out[] = '<span class="separator"></span>';
 						}
 						$out[] = $fields[$i];
@@ -226,19 +226,19 @@ class EntityAdminForm
 			case 'select':
 			case 'dbSelect':
 				$out[] = "<select class=\"form-control $class\" name=\"$fieldName\" id=\"$fieldId\" $required>";
-				if($field->emptyFirstOption !== false){
+				if ($field->emptyFirstOption !== false) {
 					$out[] = '<option value="">'.$this->view->__($field->emptyFirstOption).'</option>';
 				}
 				$options = $field->getOptions();
-				foreach($options as $opVal => $option){
-					if(is_array($option)){
+				foreach ($options as $opVal => $option) {
+					if (is_array($option)) {
 						$out[] = '<optgroup label="'.$this->view->__($opVal).'">';
-						foreach($option as $v => $o){
+						foreach ($option as $v => $o) {
 							$selected = $v == $value ? 'selected="selected"' : '';
 							$out[] = "<option value=\"$v\" $selected>".$this->view->__($o)."</option>";
 						}
 						$out[] = '</optgroup>';
-					}else{
+					} else {
 						$selected = $opVal == $value ? 'selected="selected"' : '';
 						$out[] = "<option value=\"$opVal\" $selected>".$this->view->__($option)."</option>";
 					}
@@ -252,7 +252,7 @@ class EntityAdminForm
 				break;
 			case 'checkbox':
 				$options = $field->getOptions();
-				foreach($options as $opVal => $option){
+				foreach ($options as $opVal => $option) {
 					$optionName = "{$fieldName}[$opVal]";
 					$optionId = "{$fieldId}_$opVal";
 					$checked = isset($value[$opVal]) && $value[$opVal] ? 'checked="checked"' : '';
@@ -268,7 +268,7 @@ class EntityAdminForm
 			case 'dbCheckbox':
 				$options = $field->getOptions();
 				$out[] = "<div class=\"checkbox-options\">";
-				foreach($options as $opVal => $option){
+				foreach ($options as $opVal => $option) {
 					$optionName = "{$fieldName}[]";
 					$optionId = "{$fieldId}_$opVal";
 					$values = explode(',', $value);
@@ -283,10 +283,10 @@ class EntityAdminForm
 				$out[] = "</div>";
 				break;
 			default:
-				if($value){
+				if ($value) {
 					$value = 'value="'.htmlspecialchars($value).'"';
 				}
-				if($fieldType == 'image'){
+				if ($fieldType == 'image') {
 					$fieldType = 'file';
 				}
 				$numberAtts = $fieldType == 'number' ? 'step="any"' : '';
@@ -310,9 +310,9 @@ class EntityAdminForm
 		$view = $this->view;
 		$entity = $this->entity;
 		$out = '';
-		if(isset($this->records[$entityIndex])){
+		if (isset($this->records[$entityIndex])) {
 			$recordName = $this->records[$entityIndex]->{$entity->firstField()};
-			if(is_array($recordName)) $recordName = current($recordName);
+			if (is_array($recordName)) $recordName = current($recordName);
 			$out = '<div class="bg-warning has-warning">
 				<div class="checkbox">
 					<label for="delete_'.$entity->getCleanName().'_'.$entityIndex.'">
@@ -333,32 +333,32 @@ class EntityAdminForm
 	 */
 	public function getForms()
 	{
-		$forms = array();
+		$forms = [];
 		$entity = $this->entity;
 		$view = $this->view;
 		$add = $view->getController()->getParam('add_'.$entity->getCleanName());
 		$edit = $view->getController()->getParam('edit_'.$entity->getCleanName());
 		$delete = $view->getController()->getParam('delete_'.$entity->getCleanName());
-		if(is_numeric($add)){
-			for($i = 0; $i < $add; $i++){
+		if (is_numeric($add)) {
+			for ($i = 0; $i < $add; $i++) {
 				$forms['add'][] = $i;
 			}
 		}
-		if($edit && preg_match('/^[0-9a-z_]+(,[0-9a-z_]+)*$/i', $edit)){
+		if ($edit && preg_match('/^[0-9a-z_]+(,[0-9a-z_]+)*$/i', $edit)) {
 			$forms['edit'] = explode(',', $edit);
 			$resultset = $entity->fetchIds($forms['edit']);
-			foreach($resultset as $row){
+			foreach ($resultset as $row) {
 				$this->addRecord($row->{$entity->getPrimaryKey()}, $row);
 			}
 		}
-		if($delete && preg_match('/^[0-9]+(,[0-9]+)*$/', $delete)){
+		if ($delete && preg_match('/^[0-9]+(,[0-9]+)*$/', $delete)) {
 			$forms['delete'] = explode(',', $delete);
 			$resultset = $entity->fetchIds($forms['delete']);
-			foreach($resultset as $row){
+			foreach ($resultset as $row) {
 				$this->addRecord($row->{$entity->getPrimaryKey()}, $row);
 			}
 		}
-		if(empty($forms) && empty($forms['delete'])){
+		if (empty($forms) && empty($forms['delete'])) {
 			$forms['add'][] = 0;
 		}
 		return $forms;

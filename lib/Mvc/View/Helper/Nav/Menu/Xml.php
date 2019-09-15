@@ -12,7 +12,7 @@ class Xml extends \SimpleXMLElement
 	 */
 	public function count()
 	{
-		if(method_exists('SimpleXMLElement', 'count'))
+		if (method_exists('SimpleXMLElement', 'count'))
 			return parent::count();
 		return count($this->children());
 	}
