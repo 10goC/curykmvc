@@ -985,13 +985,13 @@ class Entity
 				$records = $this->fetchIds($values);
 				foreach ($records as $record) {
 					$filename = $field->getUploadDir() . '/' . $record->{$field->getName()};
-					if (file_exists($filename)) {
+					if (file_exists($filename) && !is_dir($filename)) {
 						if (unlink($filename)) {
 							// Then attempt to delete container directory
 							$path = pathinfo($filename, PATHINFO_DIRNAME);
 							@rmdir($path);
 						} else {
-							$this->addFlashMessage("The file $filename could not be deleted from filsystem");
+							$this->addFlashMessage(sprintf($this->__('The file %s could not be deleted from filsystem'), $filename));
 						}
 					}
 				}

@@ -13,6 +13,7 @@ return [
 	"Missing 'field' key in 'categorized' property for entity %s" => "Falta la clave 'field' para categorizar la entidad %s",
 	"Please upload a file smaller than %s" => "Por favor, suba un archivo menor a %s",
 	"The file was not uploaded correctly. Please try again." => "El archivo no se subió correctamente. Por favor, intente nuevamente.",
+	"The file %s could not be deleted from filsystem" => "El archivo %s no se ha podido eliminar",
 	"No file uploaded" => "No se subió ningún archivo",
 	"Temp dir not found" => "No se encontró la carpeta temporal",
 	"An error occurred while writing file to disk" => "Error de escritura",

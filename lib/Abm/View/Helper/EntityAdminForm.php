@@ -313,12 +313,12 @@ class EntityAdminForm
 		if (isset($this->records[$entityIndex])) {
 			$recordName = $this->records[$entityIndex]->{$entity->firstField()};
 			if (is_array($recordName)) $recordName = current($recordName);
-			$out = '<div class="bg-warning has-warning">
+			$out = '<div class="alert alert-warning">
 				<div class="checkbox">
 					<label for="delete_'.$entity->getCleanName().'_'.$entityIndex.'">
 						<input type="hidden" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" value="0">
 						<input type="checkbox" name="delete_'.$entity->getCleanName().'['.$entityIndex.']" id="delete_'.$entity->getCleanName().'_'.$entityIndex.'" value="1">
-						<span class="fa fa-warning"></span>
+						<i class="fas fa-exclamation-triangle"></i>
 						<span>'.sprintf($view->__('Confirm deletion of %s?', $view::TEXTDOMAIN), $recordName).'</span>
 					</label>
 				</div>
