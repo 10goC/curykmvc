@@ -287,11 +287,27 @@ class Controller
 	}
 	
 	/**
-	 * Redirect the browser to another URL.
+	 * Generate a link appending the basepath if present in config
 	 * @param string $url
+	 * @return string
 	 */
-	public function redirect($url)
+	public function baseUrl($url = '/')
 	{
+		try {
+			$basepath = $this->getApplication()->getConfig()->basepath;
+		} catch (\Exception $e) {
+			$basepath = '';
+		}
+		return $basepath . '/' . trim($url, '/');
+	}
+	
+	/**
+	 * Redirect the browser to another URL.
+	 * @param string $path
+	 */
+	public function redirect($path)
+	{
+		$url = $this->baseUrl($path);
 		die(header("location:$url"));
 	}
 	
